@@ -1,0 +1,17 @@
+.container {
+  max-width: 700px;
+  margin: auto;
+  text-align: left;
+  padding-bottom: 2rem;
+}
+
+.container h1 {
+  color: #0077b6;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: #555;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}

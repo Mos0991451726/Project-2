@@ -1,0 +1,23 @@
+.detail {
+  max-width: 800px;
+  margin: 2rem auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+.detailImg {
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.detail h1 {
+  color: #0077b6;
+}
+
+.detail p {
+  font-size: 1.1rem;
+  margin: 0.4rem 0;
+}

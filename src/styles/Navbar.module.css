@@ -1,0 +1,105 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0077b6;
+  color: white;
+  padding: 0.8rem 2rem;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* โลโก้ */
+.logo {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: white;
+  text-decoration: none;
+}
+
+/* ลิงก์เมนู */
+.links {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 1.8rem;
+  margin: 0;
+  padding: 0;
+}
+
+.links li a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.links li a:hover {
+  color: #caf0f8;
+  transform: scale(1.05);
+}
+
+/* รูปโปรไฟล์ */
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid white;
+  transition: transform 0.2s ease;
+}
+
+.avatar:hover {
+  transform: scale(1.1);
+}
+
+.profileLink {
+  display: flex;
+  align-items: center;
+}
+
+/* ปุ่มออกจากระบบ */
+.logoutBtn {
+  background: transparent;
+  border: 1px solid #fff;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+  border-radius: 6px;
+  padding: 6px 12px;
+  transition: background 0.3s, color 0.3s;
+}
+
+.logoutBtn:hover {
+  background: white;
+  color: #0077b6;
+}
+
+/* Active menu */
+.active a {
+  border-bottom: 2px solid white;
+  padding-bottom: 3px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .links {
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .logoutBtn {
+    margin-top: 0.5rem;
+  }
+}

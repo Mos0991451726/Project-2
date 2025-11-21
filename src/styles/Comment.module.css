@@ -1,0 +1,15 @@
+.comment {
+  background-color: #f9fafc;
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  margin: 0.5rem 0;
+  text-align: left;
+  border-left: 4px solid #0077b6;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.user {
+  color: #0077b6;
+  margin-right: 5px;
+}

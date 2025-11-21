@@ -1,0 +1,32 @@
+export const mockProperties = [
+  {
+    id: 1,
+    name: "บ้านเดี่ยว ลาดพร้าว 71",
+    location: "กรุงเทพมหานคร",
+    price: "4,500,000",
+    image: "/assets/cfe3.บ้านเดี่ยว.jpg",
+    type: "บ้าน",
+    lat: 13.7848,
+    lon: 100.6197,
+  },
+  {
+    id: 2,
+    name: "คอนโด Life Sukhumvit",
+    location: "สุขุมวิท, กรุงเทพฯ",
+    price: "3,200,000",
+    image: "/assets/centric-ratchayothin-unite-reccommend-Adver-1.jpg",
+    type: "คอนโด",
+    lat: 13.7076,
+    lon: 100.6009,
+  },
+  {
+    id: 3,
+    name: "ที่ดินเปล่า นนทบุรี 200 ตร.ว.",
+    location: "บางใหญ่, นนทบุรี",
+    price: "2,800,000",
+    image: "/assets/ดาวน์โหลด.jpg",
+    type: "ที่ดิน",
+    lat: 13.8785,
+    lon: 100.4063,
+  },
+];

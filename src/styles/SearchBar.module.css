@@ -1,0 +1,19 @@
+.searchbar {
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.input {
+  width: 60%;
+  padding: 0.7rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #0077b6;
+  box-shadow: 0 0 4px rgba(0, 119, 182, 0.3);
+}

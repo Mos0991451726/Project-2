@@ -1,0 +1,201 @@
+.profilePage {
+  background-color: #f0f2f5;
+  font-family: "Prompt", sans-serif;
+  min-height: 100vh;
+}
+
+/* Cover Photo */
+.coverPhoto {
+  width: 100%;
+  height: 260px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 0 0 20px 20px;
+  position: relative;
+  box-shadow: inset 0 -3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.profileCard {
+  background: white;
+  max-width: 800px;
+  margin: -80px auto 1.5rem;
+  border-radius: 12px;
+  padding: 5rem 1rem 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  position: relative;
+}
+
+.avatarContainer {
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  object-fit: cover;
+}
+
+.editBtn {
+  background-color: #0077b6;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.editBtn:hover {
+  background-color: #005b8a;
+}
+
+.joinDate {
+  color: #555;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.bioText {
+  font-style: italic;
+  margin-top: 10px;
+}
+
+/* โพสต์ของฉัน */
+.myPostsSection {
+  margin: 2rem auto;
+  padding: 1rem;
+  max-width: 700px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.myPostsSection h3 {
+  font-size: 1.3rem;
+  color: #0077b6;
+  margin-bottom: 1rem;
+}
+
+.noPost {
+  text-align: center;
+  color: gray;
+  font-style: italic;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.editModal {
+  background: white;
+  border-radius: 16px;
+  width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease;
+}
+
+.editSection {
+  margin-bottom: 1rem;
+}
+
+.previewAvatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #0077b6;
+  margin-bottom: 0.4rem;
+}
+
+.previewCover {
+  width: 100%;
+  height: 140px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 2px solid #0077b6;
+  margin-bottom: 0.4rem;
+}
+
+.editBtnMini {
+  background: #0077b6;
+  color: white;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: inline-block;
+}
+.editBtnMini input {
+  display: none;
+}
+
+.inputBox,
+.textareaBox {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  resize: none;
+}
+
+.textareaBox {
+  min-height: 70px;
+}
+
+.editActions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.saveBtn,
+.cancelBtn {
+  flex: 1;
+  margin: 0 0.3rem;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.saveBtn {
+  background: #0077b6;
+  color: white;
+}
+.saveBtn:hover {
+  background: #005b8a;
+}
+
+.cancelBtn {
+  background: #ddd;
+}
+.cancelBtn:hover {
+  background: #bbb;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
