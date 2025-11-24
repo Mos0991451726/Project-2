@@ -1,3 +1,4 @@
+// Navbar.jsx
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -6,11 +7,6 @@ import styles from "../styles/Navbar.module.css";
 function Navbar() {
   const { user, isLoggedIn, logout } = useAuth();
   const location = useLocation();
-
-  const storedUser = JSON.parse(localStorage.getItem("user"));
-  const avatar =
-    storedUser?.avatar || user?.avatar || "/assets/default-avatar.png";
-  const name = storedUser?.name || user?.name || "โปรไฟล์ของฉัน";
 
   const isActive = (path) => location.pathname === path;
 
@@ -31,11 +27,17 @@ function Navbar() {
           <Link to="/about">เกี่ยวกับ</Link>
         </li>
 
-        {isLoggedIn ? (
+        {!isLoggedIn ? (
+          <>
+            <li className={isActive("/login") ? styles.active : ""}>
+              <Link to="/login">เข้าสู่ระบบ</Link>
+            </li>
+          </>
+        ) : (
           <>
             {user?.role === "admin" && (
               <li className={isActive("/admin") ? styles.active : ""}>
-                <Link to="/admin">จัดการระบบ</Link>
+                <Link to="/admin">แดชบอร์ดแอดมิน</Link>
               </li>
             )}
 
@@ -44,8 +46,8 @@ function Navbar() {
             </li>
 
             <li>
-              <Link to="/profile" className={styles.profileLink} title={name}>
-                <img src={avatar} alt="avatar" className={styles.avatar} />
+              <Link to="/profile" className={styles.profileLink}>
+                <img src={user.avatar} className={styles.avatar} />
               </Link>
             </li>
 
@@ -53,12 +55,6 @@ function Navbar() {
               <button className={styles.logoutBtn} onClick={logout}>
                 ออกจากระบบ
               </button>
-            </li>
-          </>
-        ) : (
-          <>
-            <li className={isActive("/login") ? styles.active : ""}>
-              <Link to="/login">เข้าสู่ระบบ</Link>
             </li>
           </>
         )}

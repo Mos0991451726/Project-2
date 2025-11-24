@@ -1,17 +1,25 @@
+/* หน้า Community ทั้งหมด */
 .container {
   max-width: 700px;
-  margin: auto;
-  text-align: left;
-  padding-bottom: 2rem;
+  margin: 20px auto;
+  padding: 10px;
 }
 
-.container h1 {
-  color: #0077b6;
-  margin-bottom: 0.5rem;
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 10px 0;
 }
 
 .subtitle {
   color: #555;
-  font-size: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 20px;
+  font-size: 15px;
+  text-align: center;
+}
+
+.noPosts {
+  text-align: center;
+  padding: 20px;
+  color: #666;
 }

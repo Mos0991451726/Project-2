@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom"; // ← เพิ่ม Link
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import styles from "../styles/Auth.module.css";
 
@@ -11,8 +11,17 @@ function Login() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    login(email, password);
-    navigate("/profile");
+
+    const loggedInUser = login(email, password);
+
+    if (!loggedInUser) return; // ❌ ล็อคอินไม่สำเร็จ (AuthContext จัดการ alert แล้ว)
+
+    // 🔹 ตรวจ role
+    if (loggedInUser.role === "admin") {
+      navigate("/admin");     // ไปหน้า Admin Dashboard
+    } else {
+      navigate("/profile");   // ไปหน้าโปรไฟล์ปกติของ user
+    }
   };
 
   return (
@@ -41,19 +50,13 @@ function Login() {
         </button>
       </form>
 
-      <div style={{ marginTop: "1rem", textAlign: "center" }}>
-        <span>ยังไม่มีบัญชี? </span>
-        <Link
-          to="/register"
-          style={{
-            color: "#0077b6",
-            fontWeight: "600",
-            textDecoration: "none",
-          }}
-        >
+      {/* 🔹 ลิงก์สมัครสมาชิก */}
+      <p style={{ marginTop: "1rem" }}>
+        ยังไม่มีบัญชี?{" "}
+        <Link to="/register" style={{ color: "#0077b6", fontWeight: "bold" }}>
           สมัครสมาชิก
         </Link>
-      </div>
+      </p>
     </div>
   );
 }
