@@ -13,20 +13,18 @@ function PostForm() {
 
   if (!user) return null;
 
+  // ⭐ เก็บไฟล์เป็น Blob ไม่ใช่ Base64
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    const reader = new FileReader();
-    reader.onloadend = () => setImage(reader.result);
-    reader.readAsDataURL(file);
+    setImage(file);  // <-- Blob
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!content.trim() && !image) return;
 
-    // ⭐ ส่งเข้า addPost แบบที่ PostContext รองรับ
+    // ⭐ ส่ง Blob ให้ PostContext
     addPost(content, image);
 
     setContent("");
@@ -53,9 +51,14 @@ function PostForm() {
         className={styles.fileInput}
       />
 
+      {/* ⭐ Preview Blob ด้วย URL.createObjectURL */}
       {image && (
         <div className={styles.previewWrapper}>
-          <img src={image} alt="preview" className={styles.preview} />
+          <img
+            src={URL.createObjectURL(image)}
+            alt="preview"
+            className={styles.preview}
+          />
           <button
             type="button"
             className={styles.removeBtn}

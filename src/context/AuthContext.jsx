@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";  
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
@@ -14,8 +15,10 @@ const saveAllUsers = (users) => {
 };
 
 export const AuthProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);   // ⭐ สำคัญที่สุด
 
   // ⭐ เพิ่ม admin ถ้ายังไม่มี
   const ensureDefaultAdmin = () => {
@@ -46,6 +49,8 @@ export const AuthProvider = ({ children }) => {
       setUser(users[currentEmail]);
       setIsLoggedIn(true);
     }
+
+    setLoading(false);   // ⭐ บอกว่าโหลดเสร็จแล้ว
   }, []);
 
   // สมัครสมาชิก
@@ -93,33 +98,33 @@ export const AuthProvider = ({ children }) => {
     return users[email];
   };
 
-  // 👑 ฟังก์ชันใหม่: อัปเดตข้อมูลผู้ใช้
+  // อัปเดตผู้ใช้
   const updateUser = (updatedUser) => {
     const users = getAllUsers();
 
-    // update user ในฐานข้อมูลทั้งหมด
     users[updatedUser.email] = updatedUser;
     saveAllUsers(users);
 
-    // update user ปัจจุบันใน state
     setUser(updatedUser);
   };
 
+ 
   const logout = () => {
     localStorage.removeItem("currentUser");
     setUser(null);
     setIsLoggedIn(false);
+    navigate("/login");   
   };
-
   return (
     <AuthContext.Provider
       value={{
         user,
         isLoggedIn,
+        loading,   
         register,
         login,
         logout,
-        updateUser,   // ⭐ เพิ่มตรงนี้
+        updateUser,
       }}
     >
       {children}

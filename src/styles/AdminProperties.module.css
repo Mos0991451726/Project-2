@@ -1,0 +1,68 @@
+/* Layout หลัก */
+.layout {
+  display: flex;                   /* ⭐ Sidebar + Content อยู่ข้างกัน */
+  width: 100%;
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+/* พื้นที่ Content */
+.content {
+  flex: 1;
+  margin-left: 250px;              /* ⭐ ระยะ sidebar */
+  padding: 40px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;             /* ⭐ จัดกึ่งกลาง */
+}
+
+/* Title */
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 25px;
+  color: #333;
+  text-align: center;
+}
+
+/* Table */
+.table {
+  width: 100%;
+  max-width: 1000px;               /* ⭐ คุมไม่ให้กว้างเกิน */
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.09);
+}
+
+.table th {
+  background: #2563eb;
+  color: white;
+  padding: 14px;
+  text-align: left;
+  font-size: 15px;
+}
+
+.table td {
+  padding: 14px;
+  font-size: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.table tbody tr:hover {
+  background: #f0f7ff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .content {
+    margin-left: 0;
+    padding: 20px;
+  }
+
+  .table {
+    max-width: 100%;
+  }
+}

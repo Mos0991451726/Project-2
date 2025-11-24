@@ -1,0 +1,131 @@
+/* Layout สำหรับหน้าแสดงรายงาน */
+.layout {
+  display: flex;            
+  width: 100%;
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+/* Content อยู่ขวา */
+.content {
+  flex: 1;
+  margin-left: 250px;
+  padding: 40px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Title */
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 25px;
+  color: #333;
+  text-align: center;
+}
+
+/* ถ้าไม่มีรายงาน */
+.empty {
+  background: #f1f3f5;
+  padding: 20px;
+  text-align: center;
+  border-radius: 10px;
+  color: #666;
+  font-size: 16px;
+  width: 100%;
+  max-width: 850px;
+}
+
+/* กล่องรายงานแต่ละอัน */
+.card {
+  width: 100%;
+  max-width: 850px;        /* ⭐ ให้กว้างพอดี */
+  background: white;
+  padding: 24px;
+  margin-bottom: 25px;
+
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  border-left: 6px solid #ff4d4d;
+  transition: .2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+}
+
+.row {
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #444;
+}
+
+.row strong {
+  color: #222;
+}
+
+/* ปุ่มจัดการ */
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+/* ปุ่มพื้นฐาน */
+.actions button {
+  padding: 10px 16px;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: .2s;
+}
+
+/* ปุ่มดูโพสต์ */
+.viewBtn {
+  background: #0ea5e9;
+}
+.viewBtn:hover {
+  background: #0284c7;
+}
+
+/* ปุ่มลบโพสต์ */
+.deletePostBtn {
+  background: #ef4444;
+}
+.deletePostBtn:hover {
+  background: #dc2626;
+}
+
+/* ปุ่มลบรายงาน */
+.deleteReportBtn {
+  background: #6b7280;
+}
+.deleteReportBtn:hover {
+  background: #4b5563;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .content {
+    margin-left: 0;
+    padding: 20px;
+  }
+
+  .card {
+    max-width: 100%;
+  }
+
+  .actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}

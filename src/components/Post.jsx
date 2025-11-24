@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import styles from "../styles/Post.module.css";
 import { useAuth } from "../context/AuthContext";
 import { usePosts } from "../context/PostContext";
+import { useNavigate } from "react-router-dom";
+import { addReportDB } from "../utils/db";
 
 // 🕓 ฟังก์ชันแปลงเวลา
 function timeAgo(timestamp) {
@@ -18,6 +20,7 @@ function timeAgo(timestamp) {
 function Post({ post }) {
   const { user } = useAuth();
   const { deletePost, editPost, likePost, addComment, addReply } = usePosts();
+  const navigate = useNavigate();
 
   const [showMenu, setShowMenu] = useState(false);
   const [showCommentBox, setShowCommentBox] = useState(false);
@@ -26,7 +29,9 @@ function Post({ post }) {
   const [replyIndex, setReplyIndex] = useState(null);
   const [replyText, setReplyText] = useState("");
 
-  // โหลดข้อมูล user ทั้งหมดจาก localStorage
+  if (!user) return null;
+
+  // โหลด user ทั้งหมดจาก localStorage
   const allUsersObj = JSON.parse(localStorage.getItem("users")) || {};
   const allUsers = Object.values(allUsersObj);
 
@@ -34,9 +39,18 @@ function Post({ post }) {
     allUsers.find((u) => u.email === post.userId) || {
       username: "ผู้ใช้ไม่พบ",
       avatar: "/assets/default-avatar.png",
+      email: "none",
     };
 
-  // ➤ ฟังก์ชันส่งคอมเมนต์
+  // ⭐ แปลงภาพจาก Blob → URL
+  let imageURL = null;
+  if (post.image instanceof Blob) {
+    imageURL = URL.createObjectURL(post.image);
+  } else if (typeof post.image === "string") {
+    imageURL = post.image;
+  }
+
+  // ✏ ส่งคอมเมนต์
   const handleComment = (e) => {
     e.preventDefault();
     if (!commentText.trim()) return;
@@ -52,7 +66,7 @@ function Post({ post }) {
     setCommentText("");
   };
 
-  // ➤ ฟังก์ชันส่ง reply (ตอบกลับ)
+  // ↩ ส่งตอบกลับ
   const handleReply = (index) => {
     if (!replyText.trim()) return;
 
@@ -68,14 +82,54 @@ function Post({ post }) {
     setReplyIndex(null);
   };
 
+  // 🚨 รายงานโพสต์
+  const handleReport = async () => {
+    const reason = prompt("เหตุผลที่รายงานโพสต์:");
+
+    if (!reason) return;
+
+    const reportData = {
+      postId: post.id,
+      postOwner: owner.username,
+      postOwnerEmail: owner.email,
+      postOwnerAvatar: owner.avatar,
+
+      reportedBy: user.email,
+      reportedName: user.username,
+
+      reason,
+      postContent: post.content,
+
+      fullPost: post, // ⭐ ให้ popup ใช้ได้
+
+      time: new Date().toISOString(),
+    };
+
+    await addReportDB(reportData);
+
+    alert("📩 รายงานโพสต์สำเร็จ!");
+  };
+
   return (
     <div className={styles.card}>
       {/* Header */}
       <div className={styles.header}>
-        <img src={owner.avatar} className={styles.avatar} alt="avatar" />
+        <img
+          src={owner.avatar}
+          className={styles.avatar}
+          alt="avatar"
+          onClick={() => navigate(`/profile/${owner.email}`)}
+          style={{ cursor: "pointer" }}
+        />
 
         <div className={styles.ownerInfo}>
-          <strong>{owner.username}</strong>
+          <strong
+            style={{ cursor: "pointer" }}
+            onClick={() => navigate(`/profile/${owner.email}`)}
+          >
+            {owner.username}
+          </strong>
+
           <div className={styles.time}>{timeAgo(post.time)}</div>
         </div>
 
@@ -90,6 +144,7 @@ function Post({ post }) {
 
           {showMenu && (
             <div className={styles.menuList}>
+              {/* เจ้าของโพสต์ */}
               {user.email === post.userId && (
                 <>
                   <button
@@ -115,15 +170,35 @@ function Post({ post }) {
                 </>
               )}
 
-              <button
-                className={styles.menuItem}
-                onClick={() => {
-                  alert("📣 รายงานโพสต์เรียบร้อย");
-                  setShowMenu(false);
-                }}
-              >
-                🚨 รายงานโพสต์
-              </button>
+              {/* ผู้ใช้คนอื่น */}
+              {user.email !== post.userId && (
+                <button
+                  className={styles.menuItem}
+                  onClick={() => {
+                    const reportData = {
+                      postId: post.id,
+                      postOwner: owner.email,
+                      postOwnerName: owner.username,
+                      postOwnerAvatar: owner.avatar,
+                      reportedBy: user.email,
+                      reason: "โพสต์ไม่เหมาะสม",
+                      postContent: post.content,
+                      time: new Date().toISOString(),
+
+                      // ⭐ สำคัญที่สุด: ส่งโพสต์จริงพร้อม owner
+                      fullPost: {
+                        ...post,
+                        owner: owner  // เพิ่ม owner เข้าไป
+                      }
+                    };
+
+                    addReportDB(reportData);
+                    alert("ส่งรายงานเรียบร้อย");
+                  }}
+                >
+                  🚨 รายงานโพสต์
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -133,17 +208,16 @@ function Post({ post }) {
       <div className={styles.content}>
         {post.content && <p className={styles.text}>{post.content}</p>}
 
-        {post.image && (
-          <img src={post.image} alt="โพสต์" className={styles.image} />
+        {imageURL && (
+          <img src={imageURL} alt="โพสต์" className={styles.image} />
         )}
       </div>
 
       {/* ปุ่ม Like / Comment */}
       <div className={styles.actions}>
         <button
-          className={`${styles.likeBtn} ${
-            post.likes.includes(user.email) ? styles.liked : ""
-          }`}
+          className={`${styles.likeBtn} ${post.likes.includes(user.email) ? styles.liked : ""
+            }`}
           onClick={() => likePost(post.id, user.email)}
         >
           ❤️ ถูกใจ {post.likes.length}
@@ -206,11 +280,7 @@ function Post({ post }) {
                 <div className={styles.replyList}>
                   {c.replies.map((r, idx) => (
                     <div key={idx} className={styles.replyItem}>
-                      <img
-                        src={r.avatar}
-                        className={styles.replyAvatar}
-                        alt=""
-                      />
+                      <img src={r.avatar} className={styles.replyAvatar} alt="" />
                       <div>
                         <strong>{r.userName}</strong> {r.text}
                         <div className={styles.commentTime}>

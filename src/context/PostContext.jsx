@@ -1,5 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
+import { openDB, getAllPosts, addPostDB, updatePostDB, deletePostDB } from "../utils/db"; 
+import { addReportDB } from "../utils/db";
+
+
 
 const PostContext = createContext();
 export const usePosts = () => useContext(PostContext);
@@ -8,113 +12,144 @@ export const PostProvider = ({ children }) => {
   const { user } = useAuth();
   const [posts, setPosts] = useState([]);
 
-  // โหลดโพสต์จาก localStorage
+  /* ----------------------------------------
+    🟦 โหลดโพสต์จาก IndexedDB
+  ---------------------------------------- */
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("posts") || "[]");
-
-    // ล้างโพสต์ที่มีรูปแบบผิด
-    const valid = saved.filter((p) => typeof p.content === "string");
-
-    if (valid.length !== saved.length) {
-      console.warn("⚠️ พบโพสต์ format เก่า — ล้างข้อมูลที่ผิด");
-      localStorage.setItem("posts", JSON.stringify(valid));
-    }
-
-    setPosts(valid);
+    getAllPosts().then((data) => {
+      setPosts(data);
+    });
   }, []);
 
-  // อัปเดต localStorage ทุกครั้งที่ posts เปลี่ยน
-useEffect(() => {
-  const safePosts = posts.map(p => ({
-    ...p,
-    image: typeof p.image === "string" && p.image.length < 500000 
-      ? p.image 
-      : null, // ถ้าใหญ่มาก ไม่เก็บลง localStorage
-  }));
+  /* ----------------------------------------
+    🟩 เพิ่มโพสต์
+  ---------------------------------------- */
+const addPost = async (content, imageBlob) => {
+  if (!user) return;
 
-  localStorage.setItem("posts", JSON.stringify(safePosts));
-}, [posts]);
-
-  // ⭐ เพิ่มโพสต์ใหม่
-  const addPost = (content, image) => {
-    if (!user) return;
-
-    const newPost = {
-      id: Date.now(),
-      userId: user.email,
-      userName: user.username,
-      avatar: user.avatar ?? "/assets/default-avatar.png",
-      content,
-      image,
-      time: new Date().toISOString(),
-      comments: [],
-      likes: [], // ⭐ array เท่านั้น
-    };
-
-    setPosts((prev) => [...prev, newPost]);
+  const newPost = {
+    userId: user.email,
+    userName: user.username,
+    avatar: user.avatar ?? "/assets/default-avatar.png",
+    content,
+    image: imageBlob || null,
+    time: new Date().toISOString(),
+    comments: [],
+    likes: [],
+    hidden: false,
   };
 
-  // ⭐ ลบโพสต์
-  const deletePost = (postId) => {
+  // ⭐ บันทึกลง IndexedDB
+  const id = await addPostDB(newPost);
+
+  // ⭐ อัปเดต state
+  setPosts((prev) => [...prev, { ...newPost, id }]);
+};
+
+  /* ----------------------------------------
+    🟥 ลบโพสต์
+  ---------------------------------------- */
+  const deletePost = async (postId) => {
+    await deletePostDB(postId);
     setPosts((prev) => prev.filter((p) => p.id !== postId));
   };
 
-  // ⭐ แก้ไขโพสต์
-  const editPost = (postId, newText) => {
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId ? { ...p, content: newText } : p
-      )
-    );
-  };
-
-  // ⭐ ไลก์ / ยกเลิกไลก์
-  const likePost = (postId, userEmail) => {
+  /* ----------------------------------------
+    🟨 แก้ไขโพสต์
+  ---------------------------------------- */
+  const editPost = async (postId, newText) => {
     setPosts((prev) =>
       prev.map((p) => {
         if (p.id !== postId) return p;
-
-        const current = Array.isArray(p.likes) ? p.likes : [];
-
-        if (current.includes(userEmail)) {
-          return { ...p, likes: current.filter((x) => x !== userEmail) };
-        }
-
-        return { ...p, likes: [...current, userEmail] };
+        const updated = { ...p, content: newText };
+        updatePostDB(updated);
+        return updated;
       })
     );
   };
 
-  // ⭐ เพิ่มคอมเมนต์ (comment)
+  /* ----------------------------------------
+    🟦 ไลก์
+  ---------------------------------------- */
+  const likePost = async (postId, email) => {
+    setPosts((prev) =>
+      prev.map((p) => {
+        if (p.id !== postId) return p;
+
+        const likes = Array.isArray(p.likes) ? p.likes : [];
+        const updated = {
+          ...p,
+          likes: likes.includes(email)
+            ? likes.filter((u) => u !== email)
+            : [...likes, email],
+        };
+
+        updatePostDB(updated);
+        return updated;
+      })
+    );
+  };
+
+  /* ----------------------------------------
+    🟣 คอมเมนต์
+  ---------------------------------------- */
   const addComment = (postId, comment) => {
     const newComment = { ...comment, replies: [] };
 
     setPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId
-          ? { ...p, comments: [...p.comments, newComment] }
-          : p
-      )
+      prev.map((p) => {
+        if (p.id !== postId) return p;
+        const updated = { ...p, comments: [...p.comments, newComment] };
+        updatePostDB(updated);
+        return updated;
+      })
     );
   };
 
-  // ⭐ ตอบกลับคอมเมนต์ (reply)
-  const addReply = (postId, commentIndex, replyData) => {
+  /* ----------------------------------------
+    🔵 ตอบกลับคอมเมนต์
+  ---------------------------------------- */
+  const addReply = (postId, idx, replyData) => {
     setPosts((prev) =>
       prev.map((p) => {
         if (p.id !== postId) return p;
 
-        const updatedComments = [...p.comments];
-        const target = updatedComments[commentIndex];
+        const comments = [...p.comments];
+        comments[idx].replies = [...comments[idx].replies, replyData];
 
-        if (!target.replies) target.replies = [];
-
-        target.replies = [...target.replies, replyData];
-
-        return { ...p, comments: updatedComments };
+        const updated = { ...p, comments };
+        updatePostDB(updated);
+        return updated;
       })
     );
   };
+
+  const reportPost = async (post, reporterEmail, reason) => {
+  const reportData = {
+    postId: post.id,
+    postOwner: post.userId,
+    reportedBy: reporterEmail,
+    reason,
+    postContent: post.content,
+    time: new Date().toISOString(),
+  };
+
+  await addReportDB(reportData);
+
+  alert("📨 รายงานถูกส่งถึงแอดมินแล้ว!");
+};
+
+const toggleHidePost = async (postId) => {
+  setPosts(prev =>
+    prev.map(p => {
+      if (p.id !== postId) return p;
+      const updated = { ...p, hidden: !p.hidden };
+      updatePostDB(updated);
+      return updated;
+    })
+  );
+};
+
 
   return (
     <PostContext.Provider
@@ -125,7 +160,9 @@ useEffect(() => {
         editPost,
         likePost,
         addComment,
-        addReply,   // ⭐ สำคัญมาก!!
+        addReply,
+        reportPost,
+        toggleHidePost
       }}
     >
       {children}
