@@ -1,10 +1,12 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useProperties } from "../context/PropertyContext";
 import AdminSidebar from "../components/AdminSidebar";
 import styles from "../styles/AdminProperties.module.css";
 
 function AdminProperties() {
-  const { properties } = useProperties();
+  const { properties, approveProperty, rejectProperty } = useProperties();
+  const navigate = useNavigate();
 
   return (
     <div className={styles.layout}>
@@ -22,21 +24,41 @@ function AdminProperties() {
                 <th>ชื่อ</th>
                 <th>ประเภท</th>
                 <th>ราคา</th>
+                <th>สถานะ</th>
+                <th>ดำเนินการ</th>
               </tr>
             </thead>
 
             <tbody>
               {properties.map((p) => (
                 <tr key={p.id}>
-                  <td>{p.name}</td>
+                  <td>{p.title}</td>
                   <td>{p.type}</td>
                   <td>{p.price}</td>
+                  <td>
+                    {p.status === "pending" ? "⌛ รออนุมัติ" : "✔️ อนุมัติแล้ว"}
+                  </td>
+                  <td>
+                    {p.status === "pending" && (
+                      <>
+                        <button onClick={() => approveProperty(p.id)}>
+                          ✔️ อนุมัติ
+                        </button>
+                        <button onClick={() => rejectProperty(p.id)}>
+                          ❌ ลบ
+                        </button>
+                      </>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </div>
+      <button className={styles.logout} onClick={() => navigate("/profile")}>
+        🔙 กลับหน้าโปรไฟล์
+      </button>
     </div>
   );
 }

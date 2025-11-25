@@ -1,32 +1,43 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import { mockProperties } from "../data/mockProperties";
+import { useProperties } from "../context/PropertyContext";
 import MapComponent from "../components/MapComponent";
 import styles from "../styles/PropertyDetail.module.css";
 
 function PropertyDetail() {
-  const { id } = useParams();
-  const property = mockProperties.find((p) => p.id === parseInt(id));
+  const { id } = useParams(); // ดึง id จาก URL
+  const { properties } = useProperties();
 
-  if (!property) return <h2>ไม่พบข้อมูลอสังหาริมทรัพย์</h2>;
+  // หา property ตาม id
+  const property = properties.find((p) => p.id === Number(id));
+
+  if (!property) return <p>❌ ไม่พบประกาศ</p>;
 
   return (
-    <div className={styles.detail}>
-      <h1>{property.name}</h1>
+    <div className={styles.container}>
+      <h1>{property.title}</h1>
 
       <img
         src={property.image || "/assets/no-image.png"}
-        alt={property.name}
-        className={styles.detailImg}
+        alt={property.title}
+        className={styles.image}
         onError={(e) => (e.target.src = "/assets/no-image.png")}
       />
 
       <p>📍 {property.location}</p>
       <p>💰 ราคา: {property.price} บาท</p>
       <p>🏠 ประเภท: {property.type}</p>
+      <p>🏠 หมวดหมู่: {property.category}</p>
+      <p>📝 รายละเอียด: {property.details}</p>
+      <p>📅 วันที่โพสต์: {new Date(property.time).toLocaleString()}</p>
 
-      <h3>ตำแหน่งบนแผนที่</h3>
-      <MapComponent lat={property.lat} lon={property.lon} name={property.name} />
+      {/* แสดงตำแหน่งบนแผนที่ ถ้ามีพิกัด */}
+      {property.lat && property.lon && (
+        <>
+          <h3>ตำแหน่งบนแผนที่</h3>
+          <MapComponent lat={property.lat} lon={property.lon} name={property.title} />
+        </>
+      )}
     </div>
   );
 }

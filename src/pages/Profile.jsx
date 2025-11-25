@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { usePosts } from "../context/PostContext";
@@ -32,6 +32,10 @@ function Profile() {
 
   // ★ เอาโพสต์ของเจ้าของโปรไฟล์
   const myPosts = posts.filter((p) => p.userId === profileUser.email);
+
+  useEffect(() => {
+    console.log(JSON.parse(localStorage.getItem("authUser")));
+  }, []);
 
   const handleSave = (updatedUser) => {
     updateUser(updatedUser); // อัปเดต currentUser เท่านั้น

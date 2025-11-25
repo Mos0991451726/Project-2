@@ -27,7 +27,8 @@ function AddProperty() {
     }
 
     const script = document.createElement("script");
-    script.src = "https://api.longdo.com/map/?key=1b4327452cc20e14a37e40cc130bd03a";
+    script.src =
+      "https://api.longdo.com/map/?key=1b4327452cc20e14a37e40cc130bd03a";
     script.async = true;
     script.onload = initMap;
     document.body.appendChild(script);
@@ -89,9 +90,10 @@ function AddProperty() {
       image,
       lat: coords.lat,
       lon: coords.lon,
+      status: "pending", // ⭐ เพิ่มสถานะรออนุมัติ
     });
 
-    alert("✅ ลงประกาศเรียบร้อยแล้ว!");
+    alert("🕒 ส่งประกาศแล้ว • รอแอดมินอนุมัติ");
     navigate("/");
   };
 
@@ -106,12 +108,11 @@ function AddProperty() {
         <label>ทำเล / ที่อยู่</label>
         <input value={location} onChange={(e) => setLocation(e.target.value)} />
 
-        <div
-          id="propertyMap"
-          className={styles.map}
-        ></div>
+        <div id="propertyMap" className={styles.map}></div>
 
-        <p>📍 พิกัด: {coords.lat.toFixed(5)}, {coords.lon.toFixed(5)}</p>
+        <p>
+          📍 พิกัด: {coords.lat.toFixed(5)}, {coords.lon.toFixed(5)}
+        </p>
 
         <label>ประเภทประกาศ</label>
         <select value={type} onChange={(e) => setType(e.target.value)}>
