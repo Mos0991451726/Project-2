@@ -1,33 +1,37 @@
 /* Layout หลัก */
 .layout {
+  display: flex;               /* ⭐ วาง Sidebar + Content ข้างกัน */
   width: 100%;
   min-height: 100vh;
   background: #f5f7fb;
 }
 
-/* Content อยู่ขวา */
+/* ส่วน Content */
 .content {
-  margin-left: 250px;
+  flex: 1;
   padding: 40px;
+  margin-left: 250px;         /* ⭐ ระยะของ Sidebar */
   display: flex;
   flex-direction: column;
-  align-items: center;   
+  align-items: center;        /* ⭐ จัดกึ่งกลางทุกอย่าง */
 }
 
 /* Title */
 .title {
   font-size: 28px;
   font-weight: 700;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   color: #333;
+  text-align: center;
 }
 
 /* Table */
 .table {
   width: 100%;
+  max-width: 1000px;          /* ⭐ ควบคุมความกว้างไม่ให้ยาวเกิน */
   border-collapse: collapse;
   background: #ffffff;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.09);
 }
@@ -59,6 +63,11 @@
   border-radius: 7px;
   color: white;
   cursor: pointer;
+  transition: 0.2s;
+}
+
+.actionBtn:hover {
+  background: #d97706;
 }
 
 .actionDelete {
@@ -68,45 +77,21 @@
   border-radius: 7px;
   color: white;
   cursor: pointer;
-}
-
-/* Dashboard cards */
-.content {
-  margin-left: 250px;
-  padding: 40px;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.cards {
-  display: flex;
-  gap: 20px;
-  width: 100%;
-  justify-content: center;
-}
-
-.card {
-  background: white;
-  padding: 22px;
-  border-radius: 12px;
-  width: 260px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
   transition: 0.2s;
 }
 
-.card:hover {
-  transform: translateY(-3px);
+.actionDelete:hover {
+  background: #dc2626;
 }
 
-.card h3 {
-  font-size: 18px;
-  margin-bottom: 6px;
-}
+/* Responsive */
+@media (max-width: 768px) {
+  .content {
+    margin-left: 0;
+    padding: 20px;
+  }
 
-.card p {
-  font-size: 32px;
-  font-weight: bold;
-  color: #0055aa;
+  .table {
+    max-width: 100%;
+  }
 }

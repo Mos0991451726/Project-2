@@ -1,45 +1,133 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";  
 
 const AuthContext = createContext();
+export const useAuth = () => useContext(AuthContext);
 
-export function AuthProvider({ children }) {
+// โหลดผู้ใช้ทั้งหมด
+const getAllUsers = () => {
+  return JSON.parse(localStorage.getItem("users")) || {};
+};
+
+// บันทึกผู้ใช้ทั้งหมด
+const saveAllUsers = (users) => {
+  localStorage.setItem("users", JSON.stringify(users));
+};
+
+export const AuthProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const isLoggedIn = !!user;
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);   // ⭐ สำคัญที่สุด
 
-  // ⭕ โหลดข้อมูลผู้ใช้จาก localStorage เมื่อเปิดเว็บ
+  // ⭐ เพิ่ม admin ถ้ายังไม่มี
+  const ensureDefaultAdmin = () => {
+    const users = getAllUsers();
+
+    if (!users["admin@example.com"]) {
+      users["admin@example.com"] = {
+        email: "admin@example.com",
+        password: "123456",
+        username: "Administrator",
+        role: "admin",
+        avatar: "/assets/default-avatar.png",
+        cover: "/assets/cover-default.jpg",
+        bio: "I am the system admin",
+        joinDate: new Date().toLocaleDateString("th-TH"),
+      };
+      saveAllUsers(users);
+    }
+  };
+
   useEffect(() => {
-    const savedUser = JSON.parse(localStorage.getItem("authUser"));
-    if (savedUser) setUser(savedUser);
+    ensureDefaultAdmin();
+
+    const users = getAllUsers();
+    const currentEmail = localStorage.getItem("currentUser");
+
+    if (currentEmail && users[currentEmail]) {
+      setUser(users[currentEmail]);
+      setIsLoggedIn(true);
+    }
+
+    setLoading(false);   // ⭐ บอกว่าโหลดเสร็จแล้ว
   }, []);
 
-  // 🔵 Login (ตอนนี้ยังไม่ได้เชื่อม Backend)
+  // สมัครสมาชิก
+  const register = (email, password, username) => {
+    const users = getAllUsers();
+
+    if (users[email]) {
+      alert("อีเมลนี้ถูกใช้แล้ว");
+      return false;
+    }
+
+    users[email] = {
+      email,
+      password,
+      username,
+      role: "user",
+      avatar: "/assets/default-avatar.png",
+      cover: "/assets/cover-default.jpg",
+      bio: "",
+      joinDate: new Date().toLocaleDateString("th-TH"),
+    };
+
+    saveAllUsers(users);
+    return true;
+  };
+
+  // ล็อกอิน
   const login = (email, password) => {
-    // 💡 ถ้า email = admin@admin.com → ให้ role = admin
-    const role = email === "admin@admin.com" ? "admin" : "user";
+    const users = getAllUsers();
 
-    const loggedUser = { email, role };
-    setUser(loggedUser);
-    localStorage.setItem("authUser", JSON.stringify(loggedUser));
+    if (!users[email]) {
+      alert("ไม่พบบัญชีผู้ใช้");
+      return false;
+    }
+
+    if (users[email].password !== password) {
+      alert("รหัสผ่านไม่ถูกต้อง");
+      return false;
+    }
+
+    localStorage.setItem("currentUser", email);
+    setUser(users[email]);
+    setIsLoggedIn(true);
+
+    return users[email];
   };
 
-  // 🟠 Register (สมัคร = user เท่านั้น)
-  const register = (email, password) => {
-    const newUser = { email, role: "user" };
-    localStorage.setItem("authUser", JSON.stringify(newUser));
+  // อัปเดตผู้ใช้
+  const updateUser = (updatedUser) => {
+    const users = getAllUsers();
+
+    users[updatedUser.email] = updatedUser;
+    saveAllUsers(users);
+
+    setUser(updatedUser);
   };
 
+ 
   const logout = () => {
+    localStorage.removeItem("currentUser");
     setUser(null);
-    localStorage.removeItem("authUser");
+    setIsLoggedIn(false);
+    navigate("/login");   
   };
-
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn, login, logout, register }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoggedIn,
+        loading,   
+        register,
+        login,
+        logout,
+        updateUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  return useContext(AuthContext);
-}
+};

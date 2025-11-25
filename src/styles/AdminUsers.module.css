@@ -1,0 +1,256 @@
+/* =========================================
+   🔵 LAYOUT หลัก (Sidebar + Content)
+========================================= */
+.layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+/* Content ขวา + จัดกลาง */
+.content {
+  margin-left: 250px;
+  width: calc(100% - 250px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+}
+
+/* จำกัดความกว้างเนื้อหา */
+.content > * {
+  width: 100%;
+  max-width: 1100px;
+}
+
+
+/* =========================================
+   🟣 Title
+========================================= */
+.title {
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+
+/* =========================================
+   🟡 SEARCH & FILTER BAR
+========================================= */
+.filters {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.searchInput,
+.selectBox {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* ปุ่มเพิ่มผู้ใช้ */
+.addBtn {
+  background: #16a34a;
+  color: white;
+  padding: 9px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+.addBtn:hover {
+  background: #15803d;
+}
+
+/* ปุ่ม Export CSV */
+.exportBtn {
+  background: #0ea5e9;
+  color: white;
+  padding: 9px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+.exportBtn:hover {
+  background: #0284c7;
+}
+
+
+/* =========================================
+   🔵 TABLE
+========================================= */
+.table {
+  width: 100%;
+  background: white;
+  border-collapse: collapse;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.table th {
+  background: #2563eb;
+  color: white;
+  padding: 14px;
+  text-align: left;
+}
+
+.table td {
+  padding: 14px;
+  border-bottom: 1px solid #eee;
+  font-size: 15px;
+}
+
+.table tr:hover {
+  background: #f0f7ff;
+}
+
+
+/* =========================================
+   🟠 ACTION BUTTONS
+========================================= */
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions button {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ปุ่มดู */
+.actions button:first-child {
+  background: #3b82f6;
+  color: white;
+}
+.actions button:first-child:hover {
+  background: #1d4ed8;
+}
+
+/* ปุ่มแบน */
+.banBtn {
+  background: #f59e0b;
+  color: white;
+}
+.banBtn:hover {
+  background: #d97706;
+}
+
+/* ปุ่มปลดแบน */
+.unbanBtn {
+  background: #0ea5e9;
+  color: white;
+}
+.unbanBtn:hover {
+  background: #0284c7;
+}
+
+/* ปุ่มลบ */
+.deleteBtn {
+  background: #dc2626;
+  color: white;
+}
+.deleteBtn:hover {
+  background: #b91c1c;
+}
+
+
+/* =========================================
+   🔻 PAGINATION
+========================================= */
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+}
+
+.pagination button {
+  padding: 6px 14px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.pagination button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+
+/* =========================================
+   🟢 POPUP (UserModal + AddUserModal)
+========================================= */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999999;
+}
+
+/* กล่อง Popup */
+.modal {
+  background: white;
+  width: 420px;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+  animation: popupShow 0.25s ease;
+  text-align: left;
+}
+
+.modal h2 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+/* ปุ่มปิดใน modal */
+.closeBtn {
+  width: 100%;
+  margin-top: 15px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  background: #dc2626;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.closeBtn:hover {
+  background: #b91c1c;
+}
+
+/* Popup Animation */
+@keyframes popupShow {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

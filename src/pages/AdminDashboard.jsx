@@ -1,4 +1,5 @@
 import React from "react";
+import AdminSidebar from "../components/AdminSidebar";
 import styles from "../styles/AdminDashboard.module.css";
 import { useAuth } from "../context/AuthContext";
 import { usePosts } from "../context/PostContext";
@@ -9,33 +10,33 @@ function AdminDashboard() {
   const { posts } = usePosts();
   const { properties } = useProperties();
 
+  const allUsers = JSON.parse(localStorage.getItem("users")) || {};
+  const totalUsers = Object.keys(allUsers).length;
+
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>🔧 Admin Dashboard</h1>
-      <p className={styles.subtitle}>ยินดีต้อนรับ, {user.email}</p>
+    <div className={styles.layout}>
+      <AdminSidebar />
 
-      <div className={styles.grid}>
-        <div className={styles.card}>
-          <h2>👥 ผู้ใช้ทั้งหมด</h2>
-          <p className={styles.count}>–</p>
-          <small>ยังไม่เชื่อมต่อฐานข้อมูล</small>
+      <div className={styles.content}>
+        <h1 className={styles.title}>⚙️ ระบบจัดการ (Admin)</h1>
+        <p>ยินดีต้อนรับ, {user.email}</p>
+
+        <div className={styles.cards}>
+          <div className={styles.card}>
+            <h3>👥 ผู้ใช้ทั้งหมด</h3>
+            <p>{totalUsers}</p>
+          </div>
+
+          <div className={styles.card}>
+            <h3>📝 โพสต์ทั้งหมด</h3>
+            <p>{posts.length}</p>
+          </div>
+
+          <div className={styles.card}>
+            <h3>🏠 ประกาศทั้งหมด</h3>
+            <p>{properties.length}</p>
+          </div>
         </div>
-
-        <div className={styles.card}>
-          <h2>📝 โพสต์ทั้งหมด</h2>
-          <p className={styles.count}>{posts.length}</p>
-        </div>
-
-        <div className={styles.card}>
-          <h2>🏠 ประกาศอสังหา</h2>
-          <p className={styles.count}>{properties.length}</p>
-        </div>
-      </div>
-
-      <div className={styles.actions}>
-        <button className={styles.btn}>จัดการผู้ใช้</button>
-        <button className={styles.btn}>จัดการโพสต์</button>
-        <button className={styles.btn}>จัดการประกาศ</button>
       </div>
     </div>
   );

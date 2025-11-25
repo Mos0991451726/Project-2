@@ -1,63 +1,46 @@
 import React, { useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
+import { usePosts } from "../context/PostContext";
 import styles from "../styles/PostForm.module.css";
 
-function PostForm({ onPost }) {
-  const { isLoggedIn, user } = useAuth();
+function PostForm() {
+  const { user } = useAuth();
+  const { addPost } = usePosts();
+
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
   const fileInputRef = useRef(null);
 
-  const storedUser = JSON.parse(localStorage.getItem("user")) || {
-    name: user?.name || "คุณผู้ใช้",
-    avatar: "/assets/default-avatar.png",
-  };
+  if (!user) return null;
 
+  // ⭐ เก็บไฟล์เป็น Blob ไม่ใช่ Base64
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImage(reader.result);
-    };
-    reader.readAsDataURL(file);
+    setImage(file);  // <-- Blob
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (content.trim() === "" && !image) return;
+    if (!content.trim() && !image) return;
 
-    const postUser = {
-      name: storedUser.name,
-      avatar: storedUser.avatar,
-    };
-
-    onPost(content, image, postUser);
+    // ⭐ ส่ง Blob ให้ PostContext
+    addPost(content, image);
 
     setContent("");
     setImage(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  if (!isLoggedIn) {
-    return (
-      <div className={`${styles.postForm} ${styles.locked}`}>
-        <h3>🔒 กรุณาเข้าสู่ระบบก่อนโพสต์</h3>
-        <p>คุณต้องเข้าสู่ระบบเพื่อแชร์ความคิดเห็นหรือรูปภาพในคอมมูนิตี้</p>
-      </div>
-    );
-  }
-
   return (
-    <form className={styles.postForm} onSubmit={handleSubmit}>
-      <h3>👋 สวัสดี, {storedUser.name || user?.name || "ผู้ใช้งาน"}!</h3>
+    <form className={styles.form} onSubmit={handleSubmit}>
+      <h3 className={styles.welcome}>👋 สวัสดี, {user.username}!</h3>
 
       <textarea
+        className={styles.textarea}
         placeholder="คุณกำลังคิดอะไรอยู่?"
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        className={styles.textarea}
       />
 
       <input
@@ -68,12 +51,17 @@ function PostForm({ onPost }) {
         className={styles.fileInput}
       />
 
+      {/* ⭐ Preview Blob ด้วย URL.createObjectURL */}
       {image && (
-        <div className={styles.previewContainer}>
-          <img src={image} alt="Preview" className={styles.preview} />
+        <div className={styles.previewWrapper}>
+          <img
+            src={URL.createObjectURL(image)}
+            alt="preview"
+            className={styles.preview}
+          />
           <button
             type="button"
-            className={styles.removeImage}
+            className={styles.removeBtn}
             onClick={() => {
               setImage(null);
               if (fileInputRef.current) fileInputRef.current.value = "";
@@ -84,9 +72,7 @@ function PostForm({ onPost }) {
         </div>
       )}
 
-      <button type="submit" className={styles.submitBtn}>
-        โพสต์
-      </button>
+      <button type="submit" className={styles.postBtn}>โพสต์</button>
     </form>
   );
 }

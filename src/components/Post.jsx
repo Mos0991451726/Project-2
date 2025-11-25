@@ -1,186 +1,297 @@
 import React, { useState } from "react";
 import styles from "../styles/Post.module.css";
+import { useAuth } from "../context/AuthContext";
+import { usePosts } from "../context/PostContext";
+import { useNavigate } from "react-router-dom";
+import { addReportDB } from "../utils/db";
 
-// 🕓 ฟังก์ชันแสดงเวลาผ่านไป
+// 🕓 ฟังก์ชันแปลงเวลา
 function timeAgo(timestamp) {
-  if (!timestamp) return "";
   const now = new Date();
   const diff = Math.floor((now - new Date(timestamp)) / 1000);
-  if (isNaN(diff)) return "";
 
   if (diff < 60) return `${diff} วินาทีที่แล้ว`;
   if (diff < 3600) return `${Math.floor(diff / 60)} นาทีที่แล้ว`;
   if (diff < 86400) return `${Math.floor(diff / 3600)} ชั่วโมงที่แล้ว`;
 
-  const date = new Date(timestamp);
-  const today = new Date();
-  if (
-    date.getDate() === today.getDate() &&
-    date.getMonth() === today.getMonth() &&
-    date.getFullYear() === today.getFullYear()
-  )
-    return "วันนี้";
-
-  return date.toLocaleDateString("th-TH", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return new Date(timestamp).toLocaleString("th-TH");
 }
 
-function Post({ post, onLike, onComment, onDelete, currentUser }) {
-  const [commentText, setCommentText] = useState("");
-  const [showMenu, setShowMenu] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editText, setEditText] = useState(post.content || "");
-  const [replyTarget, setReplyTarget] = useState(null);
+function Post({ post }) {
+  const { user } = useAuth();
+  const { deletePost, editPost, likePost, addComment, addReply } = usePosts();
+  const navigate = useNavigate();
 
+  const [showMenu, setShowMenu] = useState(false);
+  const [showCommentBox, setShowCommentBox] = useState(false);
+
+  const [commentText, setCommentText] = useState("");
+  const [replyIndex, setReplyIndex] = useState(null);
+  const [replyText, setReplyText] = useState("");
+
+  if (!user) return null;
+
+  // โหลด user ทั้งหมดจาก localStorage
+  const allUsersObj = JSON.parse(localStorage.getItem("users")) || {};
+  const allUsers = Object.values(allUsersObj);
+
+  const owner =
+    allUsers.find((u) => u.email === post.userId) || {
+      username: "ผู้ใช้ไม่พบ",
+      avatar: "/assets/default-avatar.png",
+      email: "none",
+    };
+
+  // ⭐ แปลงภาพจาก Blob → URL
+  let imageURL = null;
+  if (post.image instanceof Blob) {
+    imageURL = URL.createObjectURL(post.image);
+  } else if (typeof post.image === "string") {
+    imageURL = post.image;
+  }
+
+  // ✏ ส่งคอมเมนต์
   const handleComment = (e) => {
     e.preventDefault();
     if (!commentText.trim()) return;
 
-    const newComment = {
-      user: currentUser || "ผู้ใช้",
+    addComment(post.id, {
+      userId: user.email,
+      userName: user.username,
+      avatar: user.avatar || "/assets/default-avatar.png",
       text: commentText,
       time: new Date().toISOString(),
-      replies: [],
-    };
-
-    if (replyTarget) {
-      replyTarget.replies = replyTarget.replies || [];
-      replyTarget.replies.push(newComment);
-    } else {
-      post.comments.push(newComment);
-    }
+    });
 
     setCommentText("");
-    setReplyTarget(null);
   };
 
-  const handleEditSave = () => {
-    if (editText.trim() === "") return;
-    post.content = editText;
-    setIsEditing(false);
-    setShowMenu(false);
+  // ↩ ส่งตอบกลับ
+  const handleReply = (index) => {
+    if (!replyText.trim()) return;
+
+    addReply(post.id, index, {
+      userId: user.email,
+      userName: user.username,
+      avatar: user.avatar || "/assets/default-avatar.png",
+      text: replyText,
+      time: new Date().toISOString(),
+    });
+
+    setReplyText("");
+    setReplyIndex(null);
+  };
+
+  // 🚨 รายงานโพสต์
+  const handleReport = async () => {
+    const reason = prompt("เหตุผลที่รายงานโพสต์:");
+
+    if (!reason) return;
+
+    const reportData = {
+      postId: post.id,
+      postOwner: owner.username,
+      postOwnerEmail: owner.email,
+      postOwnerAvatar: owner.avatar,
+
+      reportedBy: user.email,
+      reportedName: user.username,
+
+      reason,
+      postContent: post.content,
+
+      fullPost: post, // ⭐ ให้ popup ใช้ได้
+
+      time: new Date().toISOString(),
+    };
+
+    await addReportDB(reportData);
+
+    alert("📩 รายงานโพสต์สำเร็จ!");
   };
 
   return (
-    <div className={styles.postCard}>
+    <div className={styles.card}>
       {/* Header */}
-      <div className={styles.postHeader}>
+      <div className={styles.header}>
         <img
-          src={post.avatar || "/assets/default-avatar.png"}
-          alt="user"
-          className={styles.postAvatar}
+          src={owner.avatar}
+          className={styles.avatar}
+          alt="avatar"
+          onClick={() => navigate(`/profile/${owner.email}`)}
+          style={{ cursor: "pointer" }}
         />
-        <div className={styles.postInfo}>
-          <strong>{post.user}</strong>
-          <div className={styles.postTime}>
-            {new Date(post.time).toLocaleString("th-TH", {
-              dateStyle: "short",
-              timeStyle: "short",
-            })}
-          </div>
+
+        <div className={styles.ownerInfo}>
+          <strong
+            style={{ cursor: "pointer" }}
+            onClick={() => navigate(`/profile/${owner.email}`)}
+          >
+            {owner.username}
+          </strong>
+
+          <div className={styles.time}>{timeAgo(post.time)}</div>
         </div>
 
-        {currentUser === post.user && (
-          <div className={styles.postOptions}>
-            <button
-              className={styles.menuBtn}
-              onClick={() => setShowMenu(!showMenu)}
-            >
-              ⋯
-            </button>
+        {/* ⋯ เมนู */}
+        <div className={styles.menuWrapper}>
+          <button
+            className={styles.menuBtn}
+            onClick={() => setShowMenu((prev) => !prev)}
+          >
+            ⋯
+          </button>
 
-            {showMenu && (
-              <div className={styles.menuDropdown}>
-                {!isEditing && (
-                  <button onClick={() => setIsEditing(true)}>✏️ แก้ไข</button>
-                )}
-                <button onClick={() => onDelete(post.id)}>🗑️ ลบ</button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+          {showMenu && (
+            <div className={styles.menuList}>
+              {/* เจ้าของโพสต์ */}
+              {user.email === post.userId && (
+                <>
+                  <button
+                    className={styles.menuItem}
+                    onClick={() => {
+                      const newText = prompt("แก้ไขโพสต์:", post.content);
+                      if (newText !== null) editPost(post.id, newText);
+                      setShowMenu(false);
+                    }}
+                  >
+                    ✏️ แก้ไขโพสต์
+                  </button>
 
-      {/* Content */}
-      <div className={styles.postContent}>
-        {isEditing ? (
-          <div className={styles.editMode}>
-            <textarea
-              value={editText}
-              onChange={(e) => setEditText(e.target.value)}
-              className={styles.editTextarea}
-            />
-            <div className={styles.editActions}>
-              <button onClick={handleEditSave}>💾 บันทึก</button>
-              <button onClick={() => setIsEditing(false)}>❌ ยกเลิก</button>
+                  <button
+                    className={styles.menuItemDelete}
+                    onClick={() => {
+                      if (confirm("ต้องการลบโพสต์นี้?")) deletePost(post.id);
+                      setShowMenu(false);
+                    }}
+                  >
+                    🗑 ลบโพสต์
+                  </button>
+                </>
+              )}
+
+              {/* ผู้ใช้คนอื่น */}
+              {user.email !== post.userId && (
+                <button
+                  className={styles.menuItem}
+                  onClick={() => {
+                    const reportData = {
+                      postId: post.id,
+                      postOwner: owner.email,
+                      postOwnerName: owner.username,
+                      postOwnerAvatar: owner.avatar,
+                      reportedBy: user.email,
+                      reason: "โพสต์ไม่เหมาะสม",
+                      postContent: post.content,
+                      time: new Date().toISOString(),
+
+                      // ⭐ สำคัญที่สุด: ส่งโพสต์จริงพร้อม owner
+                      fullPost: {
+                        ...post,
+                        owner: owner  // เพิ่ม owner เข้าไป
+                      }
+                    };
+
+                    addReportDB(reportData);
+                    alert("ส่งรายงานเรียบร้อย");
+                  }}
+                >
+                  🚨 รายงานโพสต์
+                </button>
+              )}
             </div>
-          </div>
-        ) : (
-          <>
-            {post.content && <p className={styles.postText}>{post.content}</p>}
-            {post.image && (
-              <img src={post.image} alt="โพสต์" className={styles.postImage} />
-            )}
-          </>
+          )}
+        </div>
+      </div>
+
+      {/* เนื้อหาโพสต์ */}
+      <div className={styles.content}>
+        {post.content && <p className={styles.text}>{post.content}</p>}
+
+        {imageURL && (
+          <img src={imageURL} alt="โพสต์" className={styles.image} />
         )}
       </div>
 
-      {/* Actions */}
-      <div className={styles.postActions}>
+      {/* ปุ่ม Like / Comment */}
+      <div className={styles.actions}>
         <button
-          className={`${styles.likeBtn} ${post.liked ? styles.liked : ""}`}
-          onClick={onLike}
+          className={`${styles.likeBtn} ${post.likes.includes(user.email) ? styles.liked : ""
+            }`}
+          onClick={() => likePost(post.id, user.email)}
         >
-          ❤️ ถูกใจ {post.likes > 0 && <span>({post.likes})</span>}
+          ❤️ ถูกใจ {post.likes.length}
         </button>
-        <button className={styles.commentBtn}>💬 แสดงความคิดเห็น</button>
+
+        <button
+          className={styles.commentToggleBtn}
+          onClick={() => setShowCommentBox((prev) => !prev)}
+        >
+          💬 แสดงความคิดเห็น
+        </button>
       </div>
 
-      {/* Comment Form */}
-      <form onSubmit={handleComment} className={styles.commentForm}>
-        <input
-          type="text"
-          placeholder={
-            replyTarget
-              ? `ตอบกลับ ${replyTarget.user}...`
-              : "เขียนความคิดเห็น..."
-          }
-          value={commentText}
-          onChange={(e) => setCommentText(e.target.value)}
-        />
-        <button type="submit">ส่ง</button>
-      </form>
+      {/* กล่องคอมเมนต์ */}
+      {showCommentBox && (
+        <form className={styles.commentForm} onSubmit={handleComment}>
+          <input
+            type="text"
+            placeholder="แสดงความคิดเห็น..."
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+          />
+          <button type="submit">ส่ง</button>
+        </form>
+      )}
 
-      {/* Comment List */}
+      {/* รายการคอมเมนต์ */}
       <div className={styles.commentList}>
-        {post.comments?.map((c, i) => (
+        {post.comments.map((c, i) => (
           <div key={i} className={styles.commentItem}>
-            <strong>{c.user}</strong> <span>{c.text}</span>
-            <div className={styles.commentMeta}>
-              <small>{timeAgo(c.time)}</small>
+            <img src={c.avatar} className={styles.commentAvatar} alt="" />
+
+            <div>
+              <strong>{c.userName}</strong> {c.text}
+              <div className={styles.commentTime}>{timeAgo(c.time)}</div>
+
+              {/* ปุ่มตอบกลับ */}
               <button
                 className={styles.replyBtn}
-                onClick={() => setReplyTarget(c)}
+                onClick={() => setReplyIndex(replyIndex === i ? null : i)}
               >
-                ตอบกลับ
+                ↩️ ตอบกลับ
               </button>
-            </div>
 
-            {c.replies?.length > 0 && (
-              <div className={styles.replyList}>
-                {c.replies.map((r, ri) => (
-                  <div key={ri} className={styles.replyItem}>
-                    <strong>{r.user}</strong> <span>{r.text}</span>
-                    <div className={styles.commentMeta}>
-                      <small>{timeAgo(r.time)}</small>
+              {/* กล่องตอบกลับ */}
+              {replyIndex === i && (
+                <div className={styles.replyForm}>
+                  <input
+                    type="text"
+                    placeholder="พิมพ์คำตอบ..."
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                  />
+                  <button onClick={() => handleReply(i)}>ส่ง</button>
+                </div>
+              )}
+
+              {/* Reply list */}
+              {c.replies && c.replies.length > 0 && (
+                <div className={styles.replyList}>
+                  {c.replies.map((r, idx) => (
+                    <div key={idx} className={styles.replyItem}>
+                      <img src={r.avatar} className={styles.replyAvatar} alt="" />
+                      <div>
+                        <strong>{r.userName}</strong> {r.text}
+                        <div className={styles.commentTime}>
+                          {timeAgo(r.time)}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>

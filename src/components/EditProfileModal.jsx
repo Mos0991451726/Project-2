@@ -1,32 +1,32 @@
-import React, { useState } from "react";
+// EditProfileModal.jsx
+import React, { useState, useRef } from "react";
 import styles from "../styles/Profile.module.css";
 
 function EditProfileModal({ user, onClose, onSave }) {
-  const [name, setName] = useState(user.name);
+  const [username, setUsername] = useState(user.username);
   const [bio, setBio] = useState(user.bio || "");
   const [avatar, setAvatar] = useState(user.avatar);
   const [cover, setCover] = useState(user.cover);
 
-  const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => setAvatar(reader.result);
-      reader.readAsDataURL(file);
-    }
-  };
+  const avatarInputRef = useRef(null);
+  const coverInputRef = useRef(null);
 
-  const handleCoverChange = (e) => {
+  const uploadFile = (e, setter) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => setCover(reader.result);
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setter(reader.result);
+    reader.readAsDataURL(file);
   };
 
   const handleSave = () => {
-    onSave({ ...user, name, bio, avatar, cover });
+    onSave({
+      ...user,
+      username,
+      bio,
+      avatar,
+      cover,
+    });
     onClose();
   };
 
@@ -36,57 +36,79 @@ function EditProfileModal({ user, onClose, onSave }) {
         <h2>แก้ไขโปรไฟล์</h2>
 
         <div className={styles.editSection}>
-          <label>รูปโปรไฟล์</label>
-          <div className={styles.editAvatar}>
-            <img src={avatar} alt="avatar" className={styles.previewAvatar} />
-            <label className={styles.editBtnMini}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.titleLeft}>รูปโปรไฟล์</span>
+
+            {/* ปุ่มแก้ไข เปิด input file */}
+            <button
+              className={styles.editLinkBtn}
+              onClick={() => avatarInputRef.current.click()}
+            >
               แก้ไข
-              <input type="file" accept="image/*" onChange={handleAvatarChange} />
-            </label>
+            </button>
           </div>
+
+          <img src={avatar} className={styles.previewAvatar} />
+
+          {/* input file หลัก (ซ่อน) */}
+          <input
+            type="file"
+            ref={avatarInputRef}
+            className={styles.hiddenInput}
+            accept="image/*"
+            onChange={(e) => uploadFile(e, setAvatar)}
+          />
         </div>
 
-        <div className={styles.editSection}>
-          <label>รูปภาพหน้าปก</label>
-          <div className={styles.editCover}>
-            <img src={cover} alt="cover" className={styles.previewCover} />
-            <label className={styles.editBtnMini}>
-              แก้ไข
-              <input type="file" accept="image/*" onChange={handleCoverChange} />
-            </label>
-          </div>
-        </div>
 
         <div className={styles.editSection}>
-          <label>ชื่อเล่น</label>
+          <div className={styles.sectionHeader}>
+            <span className={styles.titleLeft}>รูปหน้าปก</span>
+
+            <button
+              className={styles.editLinkBtn}
+              onClick={() => coverInputRef.current.click()}
+            >
+              แก้ไข
+            </button>
+          </div>
+
+          <img src={cover} className={styles.previewCover} />
+
+          <input
+            type="file"
+            ref={coverInputRef}
+            className={styles.hiddenInput}
+            accept="image/*"
+            onChange={(e) => uploadFile(e, setCover)}
+          />
+        </div>
+
+
+        <div className={styles.editSection}>
+          <label>ชื่อผู้ใช้</label>
           <input
             type="text"
-            value={name}
             className={styles.inputBox}
-            onChange={(e) => setName(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
         </div>
 
         <div className={styles.editSection}>
           <label>คำอธิบายตัวเอง</label>
           <textarea
+            className={styles.textareaBox}
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            placeholder="แนะนำตัวเองหน่อยสิ..."
-            className={styles.textareaBox}
-          ></textarea>
-        </div>
-
-        <div className={styles.editSection}>
-          <label>วันที่สมัครสมาชิก</label>
-          <p className={styles.joinDate}>{user.joinDate}</p>
+          />
         </div>
 
         <div className={styles.editActions}>
-          <button className={styles.saveBtn} onClick={handleSave}>
+          <button onClick={handleSave} className={styles.saveBtn}>
             💾 บันทึก
           </button>
-          <button className={styles.cancelBtn} onClick={onClose}>
+          <button onClick={onClose} className={styles.cancelBtn}>
             ❌ ยกเลิก
           </button>
         </div>

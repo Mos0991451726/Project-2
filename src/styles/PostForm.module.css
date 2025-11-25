@@ -1,110 +1,76 @@
-.postForm {
+.form {
   background: white;
+  padding: 15px;
   border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  padding: 1.2rem;
-  margin-bottom: 1.5rem;
-  text-align: left;
-  transition: 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 15px;
 }
 
-.postForm:hover {
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+.welcome {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 8px;
 }
 
 .textarea {
   width: 100%;
-  height: 100px;
-  resize: none;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  padding: 0.8rem;
-  font-size: 1rem;
-  margin-bottom: 0.8rem;
-  transition: 0.3s;
-}
-
-.textarea:focus {
-  outline: none;
-  border-color: #0077b6;
-  box-shadow: 0 0 4px rgba(0, 119, 182, 0.4);
+  min-height: 120px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  padding: 12px;
+  box-sizing: border-box;
+  font-size: 15px;
+  resize: vertical;
 }
 
 .fileInput {
-  display: block;
-  margin-bottom: 0.8rem;
-  font-size: 0.9rem;
+  margin-top: 10px;
 }
 
-.submitBtn {
-  background-color: #0077b6;
-  color: white;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
-  font-weight: 500;
+.form {
+  background: white;
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  box-sizing: border-box;
 }
 
-.submitBtn:hover {
-  background-color: #023e8a;
-  transform: translateY(-1px);
+.previewWrapper {
+  margin-top: 10px;
+  position: relative;
 }
 
 .preview {
   width: 100%;
   border-radius: 10px;
-  margin-top: 0.8rem;
-  object-fit: cover;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.previewContainer {
-  position: relative;
-}
-
-.removeImage {
-  display: block;
-  margin-top: 0.3rem;
-  background: #e63946;
-  color: white;
-  padding: 0.3rem 0.6rem;
+.removeBtn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.6);
   border: none;
-  border-radius: 5px;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
-.removeImage:hover {
-  background: #9d0208;
+.postBtn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 10px;
+  background: #1877f2;
+  color: white;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
 }
 
-.locked {
-  text-align: center;
-  background: #f8f9fa;
-  color: #333;
-  padding: 1.5rem;
-  border: 1px dashed #aaa;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.locked h3 {
-  color: #0077b6;
-  margin-bottom: 0.5rem;
-}
-
-.locked p {
-  color: #555;
-  font-size: 0.95rem;
-}
-
-@media (max-width: 768px) {
-  .postForm {
-    padding: 1rem;
-  }
-
-  .textarea {
-    height: 80px;
-  }
+.postBtn:hover {
+  background: #145dbf;
 }

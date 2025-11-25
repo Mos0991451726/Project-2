@@ -1,0 +1,95 @@
+/* === Sidebar Layout === */
+.sidebar {
+  width: 250px;
+  background: #003366;
+  color: white;
+  padding: 25px 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  justify-content: space-between;
+  box-shadow: 3px 0 10px rgba(0, 0, 0, 0.15);
+}
+
+/* === Title === */
+.sidebar h2 {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 25px;
+}
+
+/* === Menu Wrapper === */
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* === Menu Item === */
+.menuItem {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #e0e6ef;
+  padding: 12px 14px;
+  font-size: 16px;
+  text-align: left;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.menuItem:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: white;
+}
+
+/* Active menu */
+.menuItem.active {
+  background: rgba(255, 255, 255, 0.28);
+  font-weight: bold;
+  color: #fff;
+}
+
+/* === Logout === */
+.logout {
+  background: #c62828;
+  border: none;
+  color: white;
+  padding: 12px;
+  font-size: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  text-align: center;
+}
+
+.logout:hover {
+  background: #a81f1f;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .menu {
+    flex-direction: row;
+    gap: 10px;
+    overflow-x: auto;
+  }
+
+  .logout {
+    margin-left: auto;
+  }
+}
