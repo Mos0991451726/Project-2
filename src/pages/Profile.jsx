@@ -7,7 +7,7 @@ import styles from "../styles/Profile.module.css";
 function Profile() {
   const { posts } = usePosts();
 
-  const storedUser = JSON.parse(localStorage.getItem("user")) || {
+  const storedUser = JSON.parse(localStorage.getItem("authUser")) || {
     name: "คุณผู้ใช้",
     avatar: "/assets/avatar-default.png",
     cover: "/assets/cover-default.jpg",
@@ -27,6 +27,10 @@ function Profile() {
       localStorage.setItem("user", JSON.stringify(updated));
       setUser(updated);
     }
+  }, []);
+
+  useEffect(() => {
+    console.log(JSON.parse(localStorage.getItem("authUser")));
   }, []);
 
   const handleSave = (updatedUser) => {
