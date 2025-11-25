@@ -10,50 +10,34 @@ function AdminSidebar() {
       <h2>Admin Panel</h2>
 
       <div className={styles.menu}>
-        <button
-          type="button"
-          className={styles.menuItem}
-          onClick={() => navigate("/admin")}
-        >
+        <button className={styles.menuItem} onClick={() => navigate("/admin/manage")}>
           Dashboard
         </button>
 
-        <button
-          type="button"
-          className={styles.menuItem}
-          onClick={() => navigate("/admin/manage")}
-        >
+        <button className={styles.menuItem} onClick={() => navigate("/admin/users")}>
           จัดการผู้ใช้
         </button>
 
-        <button
-          type="button"
-          className={styles.menuItem}
-          onClick={() => navigate("/admin/posts")}
-        >
+        <button className={styles.menuItem} onClick={() => navigate("/admin/posts")}>
           จัดการโพสต์
         </button>
 
-        <button
-          type="button"
-          className={styles.menuItem}
-          onClick={() => navigate("/admin/properties")}
-        >
+        <button className={styles.menuItem} onClick={() => navigate("/admin/properties")}>
           จัดการอสังหา
         </button>
 
-        <button
-          type="button"
-          className={styles.menuItem}
-          onClick={() => navigate("/admin/reports")}
-        >
+        <button className={styles.menuItem} onClick={() => navigate("/admin/reports")}>
           รายงาน
+        </button>
+        <button
+          className={styles.logout}
+          onClick={() => navigate("/profile")}
+        >
+          🔙 กลับหน้าโปรไฟล์
         </button>
       </div>
 
-      <button type="button" className={styles.logout}>
-        ออกจากระบบ
-      </button>
+      <button></button>
     </div>
   );
 }
