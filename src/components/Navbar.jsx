@@ -1,54 +1,52 @@
-// Navbar.jsx
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import styles from "../styles/Navbar.module.css";
 
 function Navbar() {
   const { user, isLoggedIn, logout } = useAuth();
-  const location = useLocation();
 
-  const isActive = (path) => location.pathname === path;
+  // ฟังก์ชันเปลี่ยนหน้า + รีโหลด
+  const navigateTo = (path) => {
+    window.location.href = path; // ⭐ รีเฟรชหน้า
+  };
 
   return (
     <nav className={styles.navbar}>
-      <Link to="/" className={styles.logo}>🏠 Real Estate</Link>
+      <span className={styles.logo} onClick={() => navigateTo("/")}>🏠 Real Estate</span>
 
       <ul className={styles.links}>
-        <li className={isActive("/") ? styles.active : ""}>
-          <Link to="/">หน้าแรก</Link>
+        <li>
+          <span onClick={() => navigateTo("/")}>หน้าแรก</span>
         </li>
 
-        <li className={isActive("/community") ? styles.active : ""}>
-          <Link to="/community">คอมมูนิตี้</Link>
+        <li>
+          <span onClick={() => navigateTo("/community")}>คอมมูนิตี้</span>
         </li>
 
-        <li className={isActive("/about") ? styles.active : ""}>
-          <Link to="/about">เกี่ยวกับ</Link>
+        <li>
+          <span onClick={() => navigateTo("/about")}>เกี่ยวกับ</span>
         </li>
 
         {!isLoggedIn ? (
-          <>
-            <li className={isActive("/login") ? styles.active : ""}>
-              <Link to="/login">เข้าสู่ระบบ</Link>
-            </li>
-          </>
+          <li>
+            <span onClick={() => navigateTo("/login")}>เข้าสู่ระบบ</span>
+          </li>
         ) : (
           <>
             {user?.role === "admin" && (
-              <li className={isActive("/admin") ? styles.active : ""}>
-                <Link to="/admin">แดชบอร์ดแอดมิน</Link>
+              <li>
+                <span onClick={() => navigateTo("/admin")}>แดชบอร์ดแอดมิน</span>
               </li>
             )}
 
-            <li className={isActive("/add-property") ? styles.active : ""}>
-              <Link to="/add-property">ลงประกาศ</Link>
+            <li>
+              <span onClick={() => navigateTo("/add-property")}>ลงประกาศ</span>
             </li>
 
             <li>
-              <Link to="/profile" className={styles.profileLink}>
-                <img src={user.avatar} className={styles.avatar} />
-              </Link>
+              <span onClick={() => navigateTo("/profile")}>
+                <img src={user.avatar} className={styles.avatar} alt="avatar" />
+              </span>
             </li>
 
             <li>

@@ -7,40 +7,70 @@ import styles from "../styles/Home.module.css";
 
 function Home() {
   const { properties } = useProperties();
-  const [filtered, setFiltered] = useState(properties);
 
+  // ⭐ กรองเฉพาะประกาศที่อนุมัติแล้ว
+  const approvedProperties = properties.filter((p) => p.status === "approved");
+
+  // state เก็บค่า search + filter
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [filterType, setFilterType] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterPrice, setFilterPrice] = useState("");
+
+  const [filtered, setFiltered] = useState(approvedProperties);
+
+  // ทุกครั้งที่ search หรือ filter เปลี่ยน → คำนวณ filtered ใหม่
   useEffect(() => {
-    setFiltered(properties);
-  }, [properties]);
+    let result = [...approvedProperties];
 
-  const handleSearch = (keyword) => {
-    const result = properties.filter((p) =>
-      p.title.toLowerCase().includes(keyword.toLowerCase())
-    );
-    setFiltered(result);
-  };
-
-  const handleFilter = (filterType, value) => {
-    let result = [...properties];
-
-    if (filterType === "type" && value !== "") {
-      result = result.filter((p) => p.type === value);
+    // 🔹 search
+    if (searchKeyword !== "") {
+      result = result.filter((p) =>
+        p.title.toLowerCase().includes(searchKeyword.toLowerCase())
+      );
     }
 
-    if (filterType === "category" && value !== "") {
-      result = result.filter((p) => p.category === value);
+    // 🔹 filter type
+    if (filterType !== "") {
+      result = result.filter((p) => p.type === filterType);
     }
 
-    if (filterType === "price" && value !== "") {
-      const [min, max] = value.split("-");
+    // 🔹 filter category
+    if (filterCategory !== "") {
+      result = result.filter((p) => p.category === filterCategory);
+    }
+
+    // 🔹 filter price
+    if (filterPrice !== "") {
+      const [min, max] = filterPrice.split("-");
       result = result.filter((p) => {
         const price = parseInt(p.price.toString().replace(/,/g, ""));
-        if (value.includes("+")) return price >= 5000000;
+        if (filterPrice.includes("+")) return price >= 5000000;
         return price >= min && price <= max;
       });
     }
 
     setFiltered(result);
+  }, [approvedProperties, searchKeyword, filterType, filterCategory, filterPrice]);
+
+  // handler สำหรับ SearchBar
+  const handleSearch = (keyword) => setSearchKeyword(keyword);
+
+  // handler สำหรับ FilterPanel
+  const handleFilter = (type, value) => {
+    switch (type) {
+      case "type":
+        setFilterType(value);
+        break;
+      case "category":
+        setFilterCategory(value);
+        break;
+      case "price":
+        setFilterPrice(value);
+        break;
+      default:
+        break;
+    }
   };
 
   return (
