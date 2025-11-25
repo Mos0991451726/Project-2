@@ -8,50 +8,53 @@ import styles from "../styles/Home.module.css";
 function Home() {
   const { properties } = useProperties();
 
-  // ⭐ กรองเฉพาะประกาศที่อนุมัติแล้ว
-  const approvedProperties = properties.filter((p) => p.status === "approved");
-
   // state เก็บค่า search + filter
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterPrice, setFilterPrice] = useState("");
 
-  const [filtered, setFiltered] = useState(approvedProperties);
+  // ผลลัพธ์ประกาศหลังกรอง
+  const [filtered, setFiltered] = useState([]);
 
-  // ทุกครั้งที่ search หรือ filter เปลี่ยน → คำนวณ filtered ใหม่
+  // ⭐ Recalculate filtered เมื่อ properties หรือ filter/search เปลี่ยน
   useEffect(() => {
-    let result = [...approvedProperties];
+    let result = properties.filter((p) => p.status === "approved");
 
-    // 🔹 search
+    // 🔎 Search filter
     if (searchKeyword !== "") {
       result = result.filter((p) =>
         p.title.toLowerCase().includes(searchKeyword.toLowerCase())
       );
     }
 
-    // 🔹 filter type
+    // 🏘 Filter Type
     if (filterType !== "") {
       result = result.filter((p) => p.type === filterType);
     }
 
-    // 🔹 filter category
+    // 📂 Filter Category
     if (filterCategory !== "") {
       result = result.filter((p) => p.category === filterCategory);
     }
 
-    // 🔹 filter price
+    // 💰 Filter Price
     if (filterPrice !== "") {
       const [min, max] = filterPrice.split("-");
+
       result = result.filter((p) => {
         const price = parseInt(p.price.toString().replace(/,/g, ""));
-        if (filterPrice.includes("+")) return price >= 5000000;
+
+        if (filterPrice.includes("+")) {
+          return price >= 5000000;
+        }
+
         return price >= min && price <= max;
       });
     }
 
     setFiltered(result);
-  }, [approvedProperties, searchKeyword, filterType, filterCategory, filterPrice]);
+  }, [properties, searchKeyword, filterType, filterCategory, filterPrice]);
 
   // handler สำหรับ SearchBar
   const handleSearch = (keyword) => setSearchKeyword(keyword);

@@ -10,25 +10,48 @@ function AdminSidebar() {
       <h2>Admin Panel</h2>
 
       <div className={styles.menu}>
-        <button className={styles.menuItem} onClick={() => navigate("/admin/manage")}>
+
+        {/* Dashboard */}
+        <button
+          className={styles.menuItem}
+          onClick={() => navigate("/admin")}
+        >
           Dashboard
         </button>
 
-        <button className={styles.menuItem} onClick={() => navigate("/admin/users")}>
+        {/* จัดการผู้ใช้ */}
+        <button
+          className={styles.menuItem}
+          onClick={() => navigate("/admin/users")}
+        >
           จัดการผู้ใช้
         </button>
 
-        <button className={styles.menuItem} onClick={() => navigate("/admin/posts")}>
+        {/* จัดการโพสต์ */}
+        <button
+          className={styles.menuItem}
+          onClick={() => navigate("/admin/posts")}
+        >
           จัดการโพสต์
         </button>
 
-        <button className={styles.menuItem} onClick={() => navigate("/admin/properties")}>
+        {/* จัดการอสังหา */}
+        <button
+          className={styles.menuItem}
+          onClick={() => navigate("/admin/properties")}
+        >
           จัดการอสังหา
         </button>
 
-        <button className={styles.menuItem} onClick={() => navigate("/admin/reports")}>
+        {/* รายงาน */}
+        <button
+          className={styles.menuItem}
+          onClick={() => navigate("/admin/reports")}
+        >
           รายงาน
         </button>
+
+        {/* กลับหน้าโปรไฟล์ */}
         <button
           className={styles.logout}
           onClick={() => navigate("/profile")}
@@ -36,8 +59,6 @@ function AdminSidebar() {
           🔙 กลับหน้าโปรไฟล์
         </button>
       </div>
-
-      <button></button>
     </div>
   );
 }

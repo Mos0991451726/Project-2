@@ -147,25 +147,29 @@ function Post({ post }) {
                 )}
 
                 {/* ผู้ใช้คนอื่น */}
+                {/* // ⭐ สำหรับรายงานโพสต์ */}
                 {user.email !== post.userId && (
                   <button
                     className={styles.menuItem}
                     onClick={() => {
                       setReportTarget({
                         postId: post.id,
-                        postOwner: owner.email,
-                        postOwnerName: owner.username,
-                        postOwnerAvatar: owner.avatar,
                         postContent: post.content,
+                        postImage: imageURL || null,
 
-                        reportedBy: user.email,
-                        reportedName: user.username,
-                        reportedAvatar: user.avatar,
-
-                        fullPost: {
-                          ...post,
-                          owner: owner,
+                        postOwner: {
+                          email: owner.email,
+                          username: owner.username,
+                          avatar: owner.avatar,
                         },
+
+                        reporter: {
+                          email: user.email,
+                          username: user.username,
+                          avatar: user.avatar,
+                        },
+
+                        time: new Date().toISOString(),
                       });
 
                       setShowReportModal(true);
@@ -192,9 +196,8 @@ function Post({ post }) {
         {/* ปุ่ม Like / Comment */}
         <div className={styles.actions}>
           <button
-            className={`${styles.likeBtn} ${
-              post.likes.includes(user.email) ? styles.liked : ""
-            }`}
+            className={`${styles.likeBtn} ${post.likes.includes(user.email) ? styles.liked : ""
+              }`}
             onClick={() => likePost(post.id, user.email)}
           >
             ❤️ ถูกใจ {post.likes.length}

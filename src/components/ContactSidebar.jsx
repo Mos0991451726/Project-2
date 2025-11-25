@@ -6,11 +6,13 @@ import ContactEditModal from "./ContactEditModal";
 import { useAuth } from "../context/AuthContext";
 
 function ContactSidebar({ user }) {
-  const { updateUser } = useAuth();
+  const { user: currentUser, updateUser } = useAuth();
   const [openEdit, setOpenEdit] = useState(false);
 
-  const handleSave = (updatedUser) => {
-    updateUser(updatedUser);
+  const isOwner = currentUser?.email === user.email;
+
+  const handleSave = (updatedInfo) => {
+    updateUser(updatedInfo);
   };
 
   return (
@@ -25,14 +27,16 @@ function ContactSidebar({ user }) {
         {user.line && <li><SiLine /> {user.line}</li>}
       </ul>
 
-      <button
-        className={styles.contactEditBtn}
-        onClick={() => setOpenEdit(true)}
-      >
-        แก้ไขรายละเอียด
-      </button>
+      {isOwner && (
+        <button
+          className={styles.contactEditBtn}
+          onClick={() => setOpenEdit(true)}
+        >
+          แก้ไขรายละเอียด
+        </button>
+      )}
 
-      {openEdit && (
+      {openEdit && isOwner && (
         <ContactEditModal
           user={user}
           onClose={() => setOpenEdit(false)}

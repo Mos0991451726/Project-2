@@ -455,43 +455,65 @@
 }
 
 /* ประกาศ */
+/* กล่องรายการประกาศ */
 .listingCard {
-  background: white;
-  padding: 1.2rem;
-  border-radius: 10px;
-  margin-top: 1rem;
+  background: #fff;
+  padding: 15px;
+  border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
+/* ชื่อหัวข้อ */
+.sectionTitle {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* กริดประกาศให้เล็กลง */
 .listingGrid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
 }
 
+/* การ์ดประกาศ */
 .listingItem {
-  background: #fafafa;
-  padding: .8rem;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px;
   text-align: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: 0.2s;
 }
 
+.listingItem:hover {
+  transform: scale(1.02);
+}
+
+/* ลดขนาดรูปในประกาศ */
 .listingImage {
   width: 100%;
-  border-radius: 6px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
+/* ชื่ออสังหา */
 .listingName {
-  font-size: 1rem;
-  margin: .5rem 0;
+  font-size: 14px;
   font-weight: bold;
+  margin: 6px 0 4px;
 }
 
+/* ราคา */
 .price {
-  color: #1877f2;
-  font-weight: bold;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0077b6;
 }
+
 
 .leftColumn > div {
   margin-bottom: 1.5rem; 
@@ -501,4 +523,24 @@
 .reviewCard,
 .listingCard {
   margin-bottom: 1.5rem; 
+}
+
+.propertyList {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 12px;
+}
+
+.propertyItem {
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.propertyItem:hover {
+  background: #e3f2ff;
+  transform: translateY(-2px);
 }

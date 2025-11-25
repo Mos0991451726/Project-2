@@ -4,6 +4,11 @@ import styles from "../styles/PostPopup.module.css";
 function PostPopup({ post, onClose }) {
     if (!post) return null;
 
+    // ⭐ fallback ป้องกัน error ถ้าข้อมูล owner ขาด
+    const owner = post.owner || {};
+    const avatar = owner.avatar || "/assets/default-avatar.png";
+    const username = owner.username || "ไม่พบชื่อผู้ใช้";
+
     return (
         <div className={styles.overlay}>
             <div className={styles.popup}>
@@ -13,11 +18,15 @@ function PostPopup({ post, onClose }) {
                 <h2 className={styles.title}>📌 โพสต์ต้นฉบับ</h2>
 
                 <div className={styles.header}>
-                    <img src={post.owner.avatar} className={styles.avatar} />
+                    <img
+                        src={avatar}
+                        className={styles.avatar}
+                        alt="owner"
+                    />
                     <div>
-                        <strong>{post.owner.username}</strong>
+                        <strong>{username}</strong>
                         <div className={styles.time}>
-                            {new Date(post.time).toLocaleString("th-TH")}
+                            {post.time ? new Date(post.time).toLocaleString("th-TH") : "ไม่พบเวลา"}
                         </div>
                     </div>
                 </div>
@@ -27,7 +36,6 @@ function PostPopup({ post, onClose }) {
                 {post.image && (
                     <img src={post.image} alt="post" className={styles.postImage} />
                 )}
-
             </div>
         </div>
     );

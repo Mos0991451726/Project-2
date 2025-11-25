@@ -99,14 +99,20 @@ export const AuthProvider = ({ children }) => {
   };
 
   // อัปเดตผู้ใช้
-  const updateUser = (updatedUser) => {
-    const users = getAllUsers();
+const updateUser = (updatedInfo) => {
+  if (!user) return;  
 
-    users[updatedUser.email] = updatedUser;
-    saveAllUsers(users);
+  const users = getAllUsers();
+  const email = user.email; 
 
-    setUser(updatedUser);
+  users[email] = {
+    ...users[email],
+    ...updatedInfo,
   };
+
+  saveAllUsers(users);
+  setUser(users[email]);   
+};
 
  
   const logout = () => {

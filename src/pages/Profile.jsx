@@ -2,6 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { usePosts } from "../context/PostContext";
+import { useProperties } from "../context/PropertyContext";
+
+// ⭐ ฟังก์ชันดึงข้อมูล user จาก IndexedDB (คุณมีไฟล์นี้อยู่แล้ว)
+import { getUserByEmail } from "../utils/userDB";
 
 import EditProfileModal from "../components/EditProfileModal";
 import ContactSidebar from "../components/ContactSidebar";
@@ -14,64 +18,76 @@ import styles from "../styles/Profile.module.css";
 function Profile() {
   const { user: currentUser, updateUser } = useAuth();
   const { posts } = usePosts();
-  const { email } = useParams(); // ★ email จาก URL เช่น /profile/a@gmail.com
+  const { properties } = useProperties();
 
+  const { email } = useParams();
+  const [profileUser, setProfileUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  
 
-  // โหลด user ทั้งหมดจาก localStorage
-  const allUsersObj = JSON.parse(localStorage.getItem("users")) || {};
+  // ⭐ โหลดข้อมูลผู้ใช้ตาม email ที่กำลังดู
+  useEffect(() => {
+    const loadUserData = async () => {
+      setLoading(true);
 
-  // ★ ถ้ามี email → ดูโปรไฟล์คนนั้น
-  // ★ ถ้าไม่มี → ดูโปรไฟล์ตัวเอง
-  const profileUser = email ? allUsersObj[email] : currentUser;
+      // ถ้าเปิดโปรไฟล์ตัวเอง
+      if (!email || email === currentUser?.email) {
+        setProfileUser(currentUser);
+        setLoading(false);
+        return;
+      }
 
-  if (!profileUser) return <p>ไม่พบบัญชีผู้ใช้นี้</p>;
+      // ถ้าดูโปรไฟล์ของคนอื่น → โหลดจาก userDB
+      const userFromDB = await getUserByEmail(email);
+      setProfileUser(userFromDB || null);
 
-  // ★ เจ้าของหรือไม่
+      setLoading(false);
+    };
+
+    loadUserData();
+  }, [email, currentUser]);
+
+  if (loading) return <p style={{ padding: "2rem" }}>กำลังโหลดข้อมูล...</p>;
+  if (!profileUser) return <p style={{ padding: "2rem" }}>ไม่พบบัญชีผู้ใช้นี้</p>;
+
+  // ⭐ ตรวจสอบเป็นเจ้าของโปรไฟล์?
   const isOwner = currentUser?.email === profileUser.email;
 
-  // ★ เอาโพสต์ของเจ้าของโปรไฟล์
+  // ⭐ โพสต์ของผู้ใช้
   const myPosts = posts.filter((p) => p.userId === profileUser.email);
 
-  useEffect(() => {
-    console.log(JSON.parse(localStorage.getItem("authUser")));
-  }, []);
+  // ⭐ ประกาศของผู้ใช้
+  const userProperties = properties.filter(
+    (p) => p.ownerEmail === profileUser.email
+  );
 
   const handleSave = (updatedUser) => {
-    updateUser(updatedUser); // อัปเดต currentUser เท่านั้น
+    updateUser(updatedUser);
   };
 
   return (
     <div className={styles.profilePage}>
-
-      {/* ปก */}
+      
+      {/* รูป Cover */}
       <div
         className={styles.coverPhoto}
         style={{ backgroundImage: `url(${profileUser.cover})` }}
       />
 
-      {/* Layout 2 คอลัมน์ */}
       <div className={styles.profileLayout}>
 
-        {/* ===========================
-            คอลัมน์ซ้าย
-        ============================ */}
+        {/* LEFT COLUMN */}
         <div className={styles.leftColumn}>
           <ContactSidebar user={profileUser} />
-
           <UserReviews user={profileUser} />
-
-          <UserListings
-            properties={[ ]}
-          />
+          <UserListings properties={userProperties} />
         </div>
 
-        {/* ===========================
-            คอลัมน์ขวา
-        ============================ */}
+        {/* RIGHT COLUMN */}
         <div className={styles.rightColumn}>
 
-          {/* การ์ดโปรไฟล์ */}
+          {/* Profile Card */}
           <div className={styles.profileCard}>
             <div className={styles.avatarContainer}>
               <img src={profileUser.avatar} className={styles.avatar} />
@@ -79,7 +95,7 @@ function Profile() {
 
             <h2>{profileUser.username}</h2>
 
-            {/* ปุ่มแก้ไขเฉพาะเจ้าของ */}
+            {/* แสดงปุ่มแก้ไขเฉพาะเจ้าของ */}
             {isOwner && (
               <button
                 className={styles.editBtn}
@@ -89,12 +105,16 @@ function Profile() {
               </button>
             )}
 
-            {profileUser.bio && <p className={styles.bioText}>“{profileUser.bio}”</p>}
+            {profileUser.bio && (
+              <p className={styles.bioText}>“{profileUser.bio}”</p>
+            )}
 
-            <p className={styles.joinDate}>เข้าร่วมเมื่อ: {profileUser.joinDate}</p>
+            <p className={styles.joinDate}>
+              เข้าร่วมเมื่อ: {profileUser.joinDate}
+            </p>
           </div>
 
-          {/* โพสต์ของ user */}
+          {/* MY POSTS */}
           <div className={styles.myPostsSection}>
             <h3>📸 โพสต์ของ {isOwner ? "ฉัน" : profileUser.username}</h3>
 
@@ -106,10 +126,9 @@ function Profile() {
           </div>
 
         </div>
-
       </div>
 
-      {/* โมดัลแก้ไขโปรไฟล์ */}
+      {/* EDIT MODAL */}
       {showModal && isOwner && (
         <EditProfileModal
           user={profileUser}
@@ -117,7 +136,6 @@ function Profile() {
           onSave={handleSave}
         />
       )}
-
     </div>
   );
 }

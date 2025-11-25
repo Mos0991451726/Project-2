@@ -124,18 +124,30 @@ const addPost = async (content, imageBlob) => {
     );
   };
 
-  const reportPost = async (post, reporterEmail, reason) => {
+const reportPost = async (post, reporterEmail, reason) => {
   const reportData = {
+    id: Date.now(),
     postId: post.id,
-    postOwner: post.userId,
-    reportedBy: reporterEmail,
-    reason,
     postContent: post.content,
+    postImage: post.image,
+
+    // ⭐ เจ้าของโพสต์ (ต้องเป็น object)
+    postOwner: {
+      email: post.userId,
+      username: post.userName,
+      avatar: post.avatar
+    },
+
+    // ⭐ ผู้รายงาน
+    reporter: {
+      email: reporterEmail,
+    },
+
+    reason,
     time: new Date().toISOString(),
   };
 
   await addReportDB(reportData);
-
   alert("📨 รายงานถูกส่งถึงแอดมินแล้ว!");
 };
 

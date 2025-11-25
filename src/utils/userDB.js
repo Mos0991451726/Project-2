@@ -10,6 +10,12 @@ export const saveUsers = (users) => {
   localStorage.setItem("users", JSON.stringify(users));
 };
 
+// ⭐ คืนค่าผู้ใช้แบบ object ตาม email
+export const getUserByEmail = (email) => {
+  const users = loadUsers();
+  return users[email] || null;
+};
+
 // แปลง users เป็น array
 export const usersToArray = (usersObj) => {
   return Object.keys(usersObj).map((email) => usersObj[email]);
@@ -101,18 +107,3 @@ export const paginate = (list, page, perPage) => {
   return list.slice(start, start + perPage);
 };
 
-// Export CSV
-export const exportCSV = (list) => {
-  const header = "email,username,role,status,joinDate\n";
-  const rows = list
-    .map((u) => `${u.email},${u.username},${u.role},${u.status},${u.joinDate}`)
-    .join("\n");
-
-  const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "users_export.csv";
-  a.click();
-};

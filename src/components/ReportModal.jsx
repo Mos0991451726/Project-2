@@ -19,11 +19,29 @@ function ReportModal({ post, onClose }) {
       return;
     }
 
-    // ⭐ รวมข้อมูลรายงาน
     const reportData = {
-      ...post,
+      id: Date.now(),
       reason,
       time: new Date().toISOString(),
+
+      // ⭐ ข้อมูลโพสต์
+      postId: post.postId,
+      postContent: post.postContent,
+      postImage: post.postImage,
+
+      // ⭐ เจ้าของโพสต์
+      postOwner: {
+        email: post.postOwner.email,
+        username: post.postOwner.username,
+        avatar: post.postOwner.avatar,
+      },
+
+      // ⭐ ผู้รายงานโพสต์
+      reporter: {
+        email: post.reporter.email,
+        username: post.reporter.username,
+        avatar: post.reporter.avatar,
+      },
     };
 
     await addReportDB(reportData);
@@ -46,9 +64,7 @@ function ReportModal({ post, onClose }) {
         >
           <option value="">-- เลือกเหตุผล --</option>
           {reasons.map((r, i) => (
-            <option key={i} value={r}>
-              {r}
-            </option>
+            <option key={i} value={r}>{r}</option>
           ))}
         </select>
 

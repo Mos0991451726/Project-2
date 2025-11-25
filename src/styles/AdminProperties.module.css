@@ -66,3 +66,247 @@
     max-width: 100%;
   }
 }
+ /* -------- Layout -------- */
+.layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+.content {
+  flex: 1;
+  margin-left: 250px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Title */
+.title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 25px;
+  text-align: center;
+  color: #333;
+}
+
+/* -------- Filters -------- */
+.filters {
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search {
+  flex: 2;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.select {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.bulkBtn {
+  background: #16a34a;
+  color: white;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* -------- Table -------- */
+.table {
+  width: 100%;
+  max-width: 1000px;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+}
+
+.table th {
+  background: #2563eb;
+  color: white;
+  padding: 14px;
+  text-align: left;
+}
+
+.table td {
+  padding: 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.table tbody tr:hover {
+  background: #f0f7ff;
+}
+
+/* Thumbnail */
+.thumb {
+  width: 65px;
+  height: 50px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+/* -------- Badge -------- */
+.badgePending {
+  background: #facc15;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.badgeApproved {
+  background: #4ade80;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.badgeRejected {
+  background: #f87171;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+/* -------- Actions -------- */
+.actions button {
+  margin-right: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.viewBtn {
+  background: #0ea5e9;
+  color: white;
+}
+
+.approveBtn {
+  background: #16a34a;
+  color: white;
+}
+
+.rejectBtn {
+  background: #dc2626;
+  color: white;
+}
+
+/* -------- Pagination -------- */
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  gap: 8px;
+}
+
+.pageBtn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: white;
+  border: 1px solid #ccc;
+}
+
+.activePage {
+  background: #2563eb;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .content {
+    margin-left: 0;
+    padding: 20px;
+  }
+
+  .filters {
+    flex-direction: column;
+  }
+}
+.closeBtn {
+  background: #ff9800;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.closeBtn:hover {
+  background: #e68900;
+}
+
+.deleteBtn {
+  background: #d32f2f;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.deleteBtn:hover {
+  background: #b71c1c;
+}
+
+.badgeClosed {
+  background: #ff9800;
+  color: white;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+.closeBtn {
+  background: #ff9800;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 5px;
+  transition: 0.2s;
+}
+.closeBtn:hover {
+  background: #e68900;
+}
+
+.deleteBtn {
+  background: #e53935;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 5px;
+  transition: 0.2s;
+}
+.deleteBtn:hover {
+  background: #c62828;
+}
+
+.reopenBtn {
+  background: #009688;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.reopenBtn:hover {
+  background: #00796b;
+}

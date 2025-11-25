@@ -5,28 +5,121 @@
   padding: 1rem;
   text-align: center;
   transition: transform 0.2s ease;
+  position: relative;
+
+  /* ⭐ ป้องกันความกว้างไม่เท่ากันของทุกการ์ด */
+  width: 100%;
+  min-width: 300px;
+  max-width: 350px;
+
+  /* ⭐ ให้สูงใกล้เคียงกัน ป้องกัน Grid กระโดด */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .propertyCard:hover {
   transform: translateY(-5px);
 }
 
-.propertyImage {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 10px;
-  margin-bottom: 0.5rem;
+/* 🔥 ป้ายมาใหม่ */
+.badgeNew {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #ff5722;
+  color: white;
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  z-index: 10;
 }
 
+/* ❤️ ปุ่ม Favorite */
+.favBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+/* 📸 wrapper ของรูป */
+.imageWrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+
+  /* ⭐ ขนาดรูปเท่ากันทุกการ์ด */
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #eee;
+}
+
+.propertyImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* ▶ ปุ่มเลื่อนรูป */
+.arrowLeft,
+.arrowRight {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.45);
+  color: white;
+  border: none;
+  font-size: 20px;
+  padding: 6px 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  z-index: 20;
+}
+
+.arrowLeft {
+  left: 8px;
+}
+
+.arrowRight {
+  right: 8px;
+}
+
+.title {
+  margin: 12px 0 4px;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.location {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.price {
+  font-size: 20px;
+  font-weight: bold;
+  color: #d9534f;
+  margin: 10px 0;
+}
+
+/* 🔍 ปุ่มดูรายละเอียด */
 .btnDetail {
   background: #0077b6;
   color: white;
-  padding: 0.4rem 0.8rem;
+  padding: 0.45rem 1rem;
   border-radius: 5px;
-  text-decoration: none;
   display: inline-block;
   transition: 0.2s;
+  margin-top: 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
 }
 
 .btnDetail:hover {
