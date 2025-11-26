@@ -34,7 +34,14 @@ function UserReviews({ user }) {
             text: newReview.text,
             time: new Date().toLocaleString("th-TH"),
         };
-        setReviews([...reviews, formatted]);
+
+        const updated = [...reviews, formatted];
+
+        setReviews(updated);
+
+        // ⭐ ต้องบันทึกจริงลง localStorage ตรงนี้
+        saveReviews(user.email, updated);
+
         setShowModal(false);
     };
 

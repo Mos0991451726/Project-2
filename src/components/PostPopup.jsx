@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import styles from "../styles/PostPopup.module.css";
 
 function PostPopup({ post, onClose }) {
@@ -9,10 +9,25 @@ function PostPopup({ post, onClose }) {
     const avatar = owner.avatar || "/assets/default-avatar.png";
     const username = owner.username || "ไม่พบชื่อผู้ใช้";
 
+    // ⭐ แปลงรูป Blob → URL
+    const imageURL = useMemo(() => {
+        if (!post.image) return null;
+
+        if (post.image instanceof Blob) {
+            return URL.createObjectURL(post.image);
+        }
+
+        if (typeof post.image === "string") {
+            return post.image;
+        }
+
+        return null;
+    }, [post.image]);
+
     return (
         <div className={styles.overlay}>
             <div className={styles.popup}>
-
+                
                 <button className={styles.closeBtn} onClick={onClose}>✖</button>
 
                 <h2 className={styles.title}>📌 โพสต์ต้นฉบับ</h2>
@@ -33,8 +48,8 @@ function PostPopup({ post, onClose }) {
 
                 <p className={styles.content}>{post.content}</p>
 
-                {post.image && (
-                    <img src={post.image} alt="post" className={styles.postImage} />
+                {imageURL && (
+                    <img src={imageURL} alt="post" className={styles.postImage} />
                 )}
             </div>
         </div>

@@ -9,20 +9,20 @@ function Login() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
-    e.preventDefault();
+const handleLogin = async (e) => {
+  e.preventDefault();
 
-    const loggedInUser = login(email, password);
+  const loggedInUser = await login(email, password);
 
-    if (!loggedInUser) return; // ❌ ล็อคอินไม่สำเร็จ (AuthContext จัดการ alert แล้ว)
+  if (!loggedInUser) return;
 
-    // 🔹 ตรวจ role
-    if (loggedInUser.role === "admin") {
-      navigate("/admin");     // ไปหน้า Admin Dashboard
-    } else {
-      navigate("/profile");   // ไปหน้าโปรไฟล์ปกติของ user
-    }
-  };
+  // 🔹 ตรวจ role
+  if (loggedInUser.role === "admin") {
+    navigate("/admin");
+  } else {
+    navigate("/profile");
+  }
+};
 
   return (
     <div className={styles.container}>

@@ -1,73 +1,144 @@
 // utils/userDB.js
+import { openDB } from "idb";
 
-// อ่านผู้ใช้ทั้งหมด (object)
-export const loadUsers = () => {
-  return JSON.parse(localStorage.getItem("users")) || {};
+const DB_NAME = "UserDB";
+const STORE_NAME = "users";
+
+// เปิดฐานข้อมูล IndexedDB
+const getDB = () =>
+  openDB(DB_NAME, 1, {
+    upgrade(db) {
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: "email" });
+      }
+    },
+  });
+
+/* --------------------------------
+   ดึงผู้ใช้ทั้งหมดแบบ array
+----------------------------------- */
+export const getAllUsers = async () => {
+  const db = await getDB();
+  return await db.getAll(STORE_NAME);
 };
 
-// บันทึกกลับ
-export const saveUsers = (users) => {
-  localStorage.setItem("users", JSON.stringify(users));
+/* --------------------------------
+   ดึงผู้ใช้ทั้งหมดแบบ object {email: user}
+----------------------------------- */
+export const loadUsers = async () => {
+  const db = await getDB();
+  const all = await db.getAll(STORE_NAME);
+
+  const obj = {};
+  all.forEach((u) => {
+    obj[u.email] = u;
+  });
+
+  return obj;
 };
 
-// ⭐ คืนค่าผู้ใช้แบบ object ตาม email
-export const getUserByEmail = (email) => {
-  const users = loadUsers();
-  return users[email] || null;
+/* --------------------------------
+   บันทึกผู้ใช้ทั้งหมด (ไม่ค่อยใช้)
+----------------------------------- */
+export const saveUsers = async (users) => {
+  const db = await getDB();
+  const tx = db.transaction(STORE_NAME, "readwrite");
+  const store = tx.store;
+
+  await store.clear();
+
+  for (const email in users) {
+    await store.put(users[email]);
+  }
+
+  await tx.done;
 };
 
-// แปลง users เป็น array
-export const usersToArray = (usersObj) => {
+/* --------------------------------
+   ดึงผู้ใช้รายคน
+----------------------------------- */
+export const getUserByEmail = async (email) => {
+  const db = await getDB();
+  return await db.get(STORE_NAME, email);
+};
+
+/* --------------------------------
+   บันทึก/อัปเดตผู้ใช้รายเดียว (สำคัญมาก)
+----------------------------------- */
+export const saveUser = async (user) => {
+  const db = await getDB();
+  await db.put(STORE_NAME, user);
+  return true;
+};
+
+/* --------------------------------
+   แปลง object => array
+----------------------------------- */
+export const usersToArray = async (usersObj) => {
   return Object.keys(usersObj).map((email) => usersObj[email]);
 };
 
-// เปลี่ยน role
-export const updateUserRole = (email, newRole) => {
-  const users = loadUsers();
-  if (!users[email]) return false;
+/* --------------------------------
+   Admin: อัปเดต role
+----------------------------------- */
+export const updateUserRole = async (email, newRole) => {
+  const db = await getDB();
+  const user = await db.get(STORE_NAME, email);
+  if (!user) return false;
 
-  users[email].role = newRole;
-  saveUsers(users);
+  user.role = newRole;
+  await db.put(STORE_NAME, user);
   return true;
 };
 
-// ban user
-export const banUser = (email) => {
-  const users = loadUsers();
-  if (!users[email]) return false;
+/* --------------------------------
+   Ban user
+----------------------------------- */
+export const banUser = async (email) => {
+  const db = await getDB();
+  const user = await db.get(STORE_NAME, email);
+  if (!user) return false;
 
-  users[email].status = "banned";
-  saveUsers(users);
+  user.status = "banned";
+  await db.put(STORE_NAME, user);
   return true;
 };
 
-// unban user
-export const unbanUser = (email) => {
-  const users = loadUsers();
-  if (!users[email]) return false;
+/* --------------------------------
+   Unban user
+----------------------------------- */
+export const unbanUser = async (email) => {
+  const db = await getDB();
+  const user = await db.get(STORE_NAME, email);
+  if (!user) return false;
 
-  users[email].status = "active";
-  saveUsers(users);
+  user.status = "active";
+  await db.put(STORE_NAME, user);
   return true;
 };
 
-// ลบผู้ใช้
-export const deleteUserDB = (email) => {
-  const users = loadUsers();
-  if (!users[email]) return false;
+/* --------------------------------
+   ลบผู้ใช้
+----------------------------------- */
+export const deleteUserDB = async (email) => {
+  const db = await getDB();
+  const exist = await db.get(STORE_NAME, email);
+  if (!exist) return false;
 
-  delete users[email];
-  saveUsers(users);
+  await db.delete(STORE_NAME, email);
   return true;
 };
 
-// เพิ่มผู้ใช้ใหม่
-export const addUserDB = (email, username, role) => {
-  const users = loadUsers();
+/* --------------------------------
+   เพิ่มผู้ใช้ใหม่ (Admin)
+----------------------------------- */
+export const addUserDB = async (email, username, role) => {
+  const db = await getDB();
 
-  if (users[email]) return false;
+  const exist = await db.get(STORE_NAME, email);
+  if (exist) return false;
 
-  users[email] = {
+  const newUser = {
     email,
     username,
     password: "123456",
@@ -79,11 +150,13 @@ export const addUserDB = (email, username, role) => {
     joinDate: new Date().toLocaleDateString("th-TH"),
   };
 
-  saveUsers(users);
+  await db.put(STORE_NAME, newUser);
   return true;
 };
 
-// ค้นหา
+/* --------------------------------
+   ค้นหา
+----------------------------------- */
 export const searchUsers = (list, text) => {
   return list.filter(
     (u) =>
@@ -92,7 +165,9 @@ export const searchUsers = (list, text) => {
   );
 };
 
-// Filter ตาม role/status
+/* --------------------------------
+   Filter
+----------------------------------- */
 export const filterUsers = (list, role, status) => {
   return list.filter((u) => {
     const okRole = role === "all" || u.role === role;
@@ -101,9 +176,10 @@ export const filterUsers = (list, role, status) => {
   });
 };
 
-// Pagination
+/* --------------------------------
+   Pagination
+----------------------------------- */
 export const paginate = (list, page, perPage) => {
   const start = (page - 1) * perPage;
   return list.slice(start, start + perPage);
 };
-

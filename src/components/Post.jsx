@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "../styles/Post.module.css";
 import { useAuth } from "../context/AuthContext";
 import { usePosts } from "../context/PostContext";
 import { useNavigate } from "react-router-dom";
 import ReportModal from "./ReportModal";
+import { getUserByEmail } from "../utils/userDB";
 
 // 🕓 ฟังก์ชันแปลงเวลา
 function timeAgo(timestamp) {
@@ -32,18 +33,23 @@ function Post({ post }) {
   const [replyIndex, setReplyIndex] = useState(null);
   const [replyText, setReplyText] = useState("");
 
+  // ⭐ owner state ใหม่ (รองรับ IndexedDB)
+  const [owner, setOwner] = useState({
+    username: "ผู้ใช้ไม่พบ",
+    avatar: "/assets/default-avatar.png",
+    email: "none",
+  });
+
   if (!user) return null;
 
-  // โหลด user ทั้งหมดจาก localStorage
-  const allUsersObj = JSON.parse(localStorage.getItem("users")) || {};
-  const allUsers = Object.values(allUsersObj);
-
-  const owner =
-    allUsers.find((u) => u.email === post.userId) || {
-      username: "ผู้ใช้ไม่พบ",
-      avatar: "/assets/default-avatar.png",
-      email: "none",
+  // ⭐ โหลดข้อมูล owner จาก IndexedDB
+  useEffect(() => {
+    const loadOwner = async () => {
+      const found = await getUserByEmail(post.userId);
+      if (found) setOwner(found);
     };
+    loadOwner();
+  }, [post.userId]);
 
   // ⭐ แปลงภาพจาก Blob → URL
   let imageURL = null;
@@ -147,7 +153,6 @@ function Post({ post }) {
                 )}
 
                 {/* ผู้ใช้คนอื่น */}
-                {/* // ⭐ สำหรับรายงานโพสต์ */}
                 {user.email !== post.userId && (
                   <button
                     className={styles.menuItem}
@@ -196,8 +201,9 @@ function Post({ post }) {
         {/* ปุ่ม Like / Comment */}
         <div className={styles.actions}>
           <button
-            className={`${styles.likeBtn} ${post.likes.includes(user.email) ? styles.liked : ""
-              }`}
+            className={`${styles.likeBtn} ${
+              post.likes.includes(user.email) ? styles.liked : ""
+            }`}
             onClick={() => likePost(post.id, user.email)}
           >
             ❤️ ถูกใจ {post.likes.length}
