@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useProperties } from "../context/PropertyContext";
 import { useAuth } from "../context/AuthContext";
 import styles from "../styles/AddProperty.module.css";
+import Swal from "sweetalert2";
 
 function AddProperty() {
   const { addProperty } = useProperties();
@@ -15,6 +16,8 @@ function AddProperty() {
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [details, setDetails] = useState("");
+
+  const [errors, setErrors] = useState({});
 
   // ⭐ Blob images
   const [image, setImage] = useState(null);
@@ -43,9 +46,9 @@ function AddProperty() {
   const mapRef = useRef(null);
   const markerRef = useRef(null);
 
-  // ======================================================
-  // ⭐ โหลด Longdo Map พร้อมปักหมุด
-  // ======================================================
+  /* ======================================================
+     ⭐ โหลด Longdo Map
+  ====================================================== */
   useEffect(() => {
     if (!window.longdo) {
       const script = document.createElement("script");
@@ -69,11 +72,10 @@ function AddProperty() {
     map.location({ lon: coords.lon, lat: coords.lat }, true);
     map.zoom(15);
 
-    // ⭐ สร้างหมุดเริ่มต้น
+    // ⭐ สร้างหมุด
     const marker = new window.longdo.Marker(map.location());
     map.Overlays.add(marker);
 
-    // ⭐ อัปเดตหมุดเมื่อคลิกแผนที่
     map.Event.bind("click", function (overlay) {
       const loc = map.location(overlay);
       marker.move(loc);
@@ -84,23 +86,54 @@ function AddProperty() {
     markerRef.current = marker;
   };
 
-  // ======================================================
-  // ⭐ รูปภาพ
-  // ======================================================
+  /* ======================================================
+      ⭐ Upload รูป
+  ====================================================== */
   const handleImageChange = (e) => {
     if (e.target.files[0]) setImage(e.target.files[0]);
   };
+
   const handleMultipleChange = (e) => {
     setOtherImages((prev) => [...prev, ...Array.from(e.target.files)]);
   };
+
   const removeOtherImage = (i) =>
     setOtherImages((prev) => prev.filter((_, idx) => idx !== i));
 
-  // ======================================================
-  // ⭐ Submit
-  // ======================================================
+  /* ======================================================
+      ⭐ Validate ฟอร์ม
+  ====================================================== */
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!title.trim()) newErrors.title = "กรุณากรอกชื่ออสังหา";
+    if (!location.trim()) newErrors.location = "กรุณากรอกทำเล";
+    if (!type) newErrors.type = "กรุณาเลือกประเภท";
+    if (!category) newErrors.category = "กรุณาเลือกประเภทอสังหา";
+    if (!price) newErrors.price = "กรุณากรอกราคา";
+    if (price < 0) newErrors.price = "ราคาต้องมากกว่า 0";
+    if (!details.trim()) newErrors.details = "กรุณากรอกรายละเอียด";
+    if (!image) newErrors.image = "กรุณาเลือกรูปหลัก";
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
+
+  /* ======================================================
+      ⭐ Submit
+  ====================================================== */
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      Swal.fire({
+        icon: "error",
+        title: "กรอกข้อมูลไม่ครบ!",
+        text: "กรุณาตรวจสอบช่องที่เป็นสีแดง",
+      });
+      return;
+    }
 
     addProperty({
       id: Date.now(),
@@ -121,7 +154,13 @@ function AddProperty() {
       time: new Date().toISOString(),
     });
 
-    alert("รอแอดมินตรวจสอบ 🎉");
+    Swal.fire({
+      icon: "success",
+      title: "ส่งประกาศสำเร็จ!",
+      text: "รอแอดมินตรวจสอบ 🎉",
+      confirmButtonColor: "#3085d6",
+    });
+
     navigate("/");
   };
 
@@ -130,45 +169,84 @@ function AddProperty() {
       <h2>📝 ลงประกาศอสังหาริมทรัพย์</h2>
 
       <form className={styles.form} onSubmit={handleSubmit}>
-        {/* ===== ข้อมูลทั่วไป ===== */}
+        
+        {/* ===== ชื่อ ===== */}
         <label>ชื่ออสังหาริมทรัพย์</label>
-        <input value={title} onChange={(e) => setTitle(e.target.value)} />
+        <input
+          className={errors.title ? styles.errorInput : ""}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        {errors.title && <p className={styles.errorText}>{errors.title}</p>}
 
+        {/* ===== ทำเล ===== */}
         <label>ทำเล / ที่อยู่</label>
-        <input value={location} onChange={(e) => setLocation(e.target.value)} />
+        <input
+          className={errors.location ? styles.errorInput : ""}
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+        />
+        {errors.location && <p className={styles.errorText}>{errors.location}</p>}
 
-        {/* ⭐ Longdo Map */}
+        {/* ===== Map ===== */}
         <label>ตำแหน่งบนแผนที่</label>
         <div id="propertyMap" className={styles.map}></div>
         <p>📍 {coords.lat.toFixed(5)}, {coords.lon.toFixed(5)}</p>
 
+        {/* ===== ประเภทประกาศ ===== */}
         <label>ประเภทประกาศ</label>
-        <select value={type} onChange={(e) => setType(e.target.value)}>
+        <select
+          className={errors.type ? styles.errorInput : ""}
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+        >
           <option value="">เลือกประเภท</option>
           <option value="ขาย">ขาย</option>
           <option value="เช่า">เช่า</option>
         </select>
+        {errors.type && <p className={styles.errorText}>{errors.type}</p>}
 
+        {/* ===== ประเภทอสังหา ===== */}
         <label>ประเภทอสังหา</label>
-        <select value={category} onChange={(e) => setCategory(e.target.value)}>
+        <select
+          className={errors.category ? styles.errorInput : ""}
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
           <option value="">เลือกประเภท</option>
           <option value="บ้าน">บ้าน</option>
           <option value="คอนโด">คอนโด</option>
           <option value="ที่ดิน">ที่ดิน</option>
           <option value="ทาวน์โฮม">ทาวน์โฮม</option>
         </select>
+        {errors.category && <p className={styles.errorText}>{errors.category}</p>}
 
+        {/* ===== ราคา ===== */}
         <label>ราคา (บาท)</label>
-        <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
+        <input
+          type="number"
+          className={errors.price ? styles.errorInput : ""}
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+        />
+        {errors.price && <p className={styles.errorText}>{errors.price}</p>}
 
+        {/* ===== รายละเอียด ===== */}
         <label>รายละเอียด</label>
-        <textarea value={details} onChange={(e) => setDetails(e.target.value)} />
+        <textarea
+          className={errors.details ? styles.errorInput : ""}
+          value={details}
+          onChange={(e) => setDetails(e.target.value)}
+        />
+        {errors.details && <p className={styles.errorText}>{errors.details}</p>}
 
-        {/* รูปภาพ */}
+        {/* ===== รูปหลัก ===== */}
         <label>รูปหลัก</label>
         <input type="file" accept="image/*" onChange={handleImageChange} />
+        {errors.image && <p className={styles.errorText}>{errors.image}</p>}
         {image && <img src={URL.createObjectURL(image)} className={styles.previewMain} />}
 
+        {/* ===== รูปเพิ่มเติม ===== */}
         <label>รูปเพิ่มเติม</label>
         <input type="file" multiple accept="image/*" onChange={handleMultipleChange} />
         <div className={styles.previewScroll}>
@@ -180,7 +258,7 @@ function AddProperty() {
           ))}
         </div>
 
-        {/* สิ่งอำนวยความสะดวก */}
+        {/* ===== สิ่งอำนวยความสะดวก ===== */}
         <label>สิ่งอำนวยความสะดวก</label>
         <div className={styles.amenitiesGrid}>
           {amenitiesList.map((a) => (

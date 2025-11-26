@@ -1,11 +1,11 @@
 // src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 import {
   getUserByEmail,
   saveUser,
-  getAllUsers
 } from "../utils/userDB";
 
 const AuthContext = createContext();
@@ -18,7 +18,9 @@ export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // ⭐ สร้าง Admin เริ่มต้นถ้ายังไม่มี
+  /* --------------------------------------------------
+     ⭐ สร้าง Admin เริ่มต้นถ้ายังไม่มี
+  -------------------------------------------------- */
   const ensureDefaultAdmin = async () => {
     const admin = await getUserByEmail("admin@example.com");
 
@@ -39,7 +41,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // โหลด User หลัง refresh
+  /* --------------------------------------------------
+     ⭐ โหลดผู้ใช้หลังรีเฟรช
+  -------------------------------------------------- */
   useEffect(() => {
     const loadUser = async () => {
       setLoading(true);
@@ -49,9 +53,9 @@ export const AuthProvider = ({ children }) => {
       const email = localStorage.getItem("currentUser");
 
       if (email) {
-        const foundUser = await getUserByEmail(email);
-        if (foundUser) {
-          setUser(foundUser);
+        const found = await getUserByEmail(email);
+        if (found) {
+          setUser(found);
           setIsLoggedIn(true);
         }
       }
@@ -62,12 +66,18 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, []);
 
-  // Register
+  /* --------------------------------------------------
+     ⭐ Register (SweetAlert2)
+  -------------------------------------------------- */
   const register = async (email, password, username) => {
     const exist = await getUserByEmail(email);
 
     if (exist) {
-      alert("อีเมลนี้ถูกใช้แล้ว");
+      await Swal.fire({
+        icon: "error",
+        title: "สมัครสมาชิกไม่สำเร็จ",
+        text: "อีเมลนี้ถูกใช้แล้ว!",
+      });
       return false;
     }
 
@@ -84,54 +94,123 @@ export const AuthProvider = ({ children }) => {
     };
 
     await saveUser(newUser);
+
+    await Swal.fire({
+      icon: "success",
+      title: "สมัครสมาชิกสำเร็จ!",
+      timer: 1200,
+      showConfirmButton: false,
+    });
+
     return true;
   };
 
-  // Login
+  /* --------------------------------------------------
+     ⭐ Login (SweetAlert2)
+  -------------------------------------------------- */
   const login = async (email, password) => {
     const found = await getUserByEmail(email);
 
     if (!found) {
-      alert("ไม่พบบัญชีผู้ใช้");
+      await Swal.fire({
+        icon: "error",
+        title: "เข้าสู่ระบบไม่สำเร็จ",
+        text: "ไม่พบบัญชีผู้ใช้",
+      });
       return false;
     }
 
     if (found.password !== password) {
-      alert("รหัสผ่านไม่ถูกต้อง");
+      await Swal.fire({
+        icon: "error",
+        title: "รหัสผ่านไม่ถูกต้อง",
+      });
       return false;
     }
 
-    localStorage.setItem("currentUser", email);
+    // ⭐ เก็บเฉพาะอีเมลเท่านั้น
+    localStorage.setItem("currentUser", found.email);
     setUser(found);
     setIsLoggedIn(true);
+
+    await Swal.fire({
+      icon: "success",
+      title: "เข้าสู่ระบบสำเร็จ!",
+      timer: 1000,
+      showConfirmButton: false,
+    });
 
     return found;
   };
 
-  // ⭐ Update User (ไม่เก็บ Base64 ลง localStorage)
+/* --------------------------------------------------
+   ⭐ Update User (อัปเดตใน IndexedDB เท่านั้น)
+-------------------------------------------------- */
 const updateUser = async (updatedInfo) => {
   if (!user) return;
 
+  // ดึงข้อมูลล่าสุดจาก IndexedDB
   const current = await getUserByEmail(user.email);
 
-  const updated = {
+  // รวมข้อมูลใหม่เข้ากับข้อมูลเดิม
+  const updatedUser = {
     ...current,
-    username: updatedInfo.username,
-    bio: updatedInfo.bio,
-    avatar: updatedInfo.avatar,   // ← บันทึก base64 ได้เลย
-    cover: updatedInfo.cover,     // ← เหมือนกัน
+
+    // ข้อมูลพื้นฐาน
+    username: updatedInfo.username ?? current.username,
+    bio: updatedInfo.bio ?? current.bio,
+    avatar: updatedInfo.avatar ?? current.avatar,
+    cover: updatedInfo.cover ?? current.cover,
+
+    // ⭐ ช่องทางการติดต่อ
+    phone: updatedInfo.phone ?? current.phone,
+    address: updatedInfo.address ?? current.address,
+    facebook: updatedInfo.facebook ?? current.facebook,
+    instagram: updatedInfo.instagram ?? current.instagram,
+    line: updatedInfo.line ?? current.line,
   };
 
-  await saveUser(updated);
-  setUser(updated);
+  // บันทึกลง IndexedDB
+  await saveUser(updatedUser);
+
+  // อัปเดต state React
+  setUser(updatedUser);
+
+  // แจ้งเตือน
+  Swal.fire({
+    icon: "success",
+    title: "อัปเดตโปรไฟล์สำเร็จ!",
+    timer: 1000,
+    showConfirmButton: false,
+  });
 };
 
-  // Logout
-  const logout = () => {
+  /* --------------------------------------------------
+     ⭐ Logout (SweetAlert2)
+  -------------------------------------------------- */
+  const logout = async () => {
+    const result = await Swal.fire({
+      title: "ออกจากระบบ?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "ออกจากระบบ",
+      cancelButtonText: "ยกเลิก",
+    });
+
+    if (!result.isConfirmed) return;
+
     localStorage.removeItem("currentUser");
     setUser(null);
     setIsLoggedIn(false);
+
     navigate("/login");
+
+    Swal.fire({
+      icon: "success",
+      title: "ออกจากระบบสำเร็จ",
+      timer: 1000,
+      showConfirmButton: false,
+    });
   };
 
   return (

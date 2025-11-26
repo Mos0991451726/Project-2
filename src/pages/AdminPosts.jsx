@@ -2,6 +2,7 @@ import React from "react";
 import { usePosts } from "../context/PostContext";
 import AdminSidebar from "../components/AdminSidebar";
 import styles from "../styles/AdminPosts.module.css";
+import Swal from "sweetalert2";
 
 function AdminPosts() {
   const { posts, deletePost, toggleHidePost } = usePosts();
@@ -46,14 +47,30 @@ function AdminPosts() {
                     <button
                       className={styles.actionDelete}
                       onClick={() => {
-                        if (confirm("ต้องการลบโพสต์นี้จริงหรือไม่?")) {
-                          deletePost(p.id);
-                        }
+                        Swal.fire({
+                          title: "ลบโพสต์?",
+                          text: "คุณต้องการลบโพสต์นี้จริงหรือไม่?",
+                          icon: "warning",
+                          showCancelButton: true,
+                          confirmButtonColor: "#d33",
+                          cancelButtonColor: "#3085d6",
+                          confirmButtonText: "ลบ",
+                          cancelButtonText: "ยกเลิก",
+                        }).then((result) => {
+                          if (result.isConfirmed) {
+                            deletePost(p.id);
+
+                            Swal.fire({
+                              icon: "success",
+                              title: "ลบโพสต์สำเร็จ",
+                            });
+                          }
+                        });
                       }}
                     >
                       ลบโพสต์
-                    </button>
-                  </td>
+                    </button>                  
+                    </td>
                 </tr>
               ))}
             </tbody>

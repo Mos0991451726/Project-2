@@ -8,16 +8,20 @@ function App() {
   const location = useLocation();
 
   const isAdminPage = location.pathname.startsWith("/admin");
+  const isLoginPage = location.pathname === "/login";
 
   return (
     <>
-      {!isAdminPage && <Navbar />}
+      {!isAdminPage && !isLoginPage && <Navbar />}
 
-      <main className="main-container" style={{ padding: !isAdminPage ? "2rem" : "0" }}>
+      <main
+        className="main-container"
+        style={{ padding: !isAdminPage && !isLoginPage ? "2rem" : "0" }}
+      >
         <AppRoutes />
       </main>
 
-      {!isAdminPage && <Footer />}
+      {!isAdminPage && !isLoginPage && <Footer />}
     </>
   );
 }

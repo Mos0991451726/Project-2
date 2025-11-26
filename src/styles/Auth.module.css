@@ -50,3 +50,23 @@
   transform: translateY(-1px);
   transition: 0.2s;
 }
+ 
+.backHomeWrapper {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.backHomeBtn {
+  display: inline-block;
+  padding: 10px 20px;
+  background: #6c757d;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.backHomeBtn:hover {
+  background: #5a6268;
+}

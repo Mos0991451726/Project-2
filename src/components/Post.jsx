@@ -5,6 +5,7 @@ import { usePosts } from "../context/PostContext";
 import { useNavigate } from "react-router-dom";
 import ReportModal from "./ReportModal";
 import { getUserByEmail } from "../utils/userDB";
+import Swal from "sweetalert2";
 
 // 🕓 ฟังก์ชันแปลงเวลา
 function timeAgo(timestamp) {
@@ -18,8 +19,8 @@ function timeAgo(timestamp) {
   return new Date(timestamp).toLocaleString("th-TH");
 }
 
-function Post({ post }) {
-  const { user } = useAuth();
+function Post({ post, checkLogin: parentCheck }) {
+  const { user, isLoggedIn } = useAuth();
   const { deletePost, editPost, likePost, addComment, addReply } = usePosts();
   const navigate = useNavigate();
 
@@ -40,9 +41,7 @@ function Post({ post }) {
     email: "none",
   });
 
-  if (!user) return null;
-
-  // ⭐ โหลดข้อมูล owner จาก IndexedDB
+  // ⭐ โหลด owner จาก IndexedDB
   useEffect(() => {
     const loadOwner = async () => {
       const found = await getUserByEmail(post.userId);
@@ -59,9 +58,33 @@ function Post({ post }) {
     imageURL = post.image;
   }
 
-  // ✏ ส่งคอมเมนต์
-  const handleComment = (e) => {
+  /* -----------------------------------------------------------
+      ⭐ เพิ่มใหม่: เช็คล็อกอิน (ใช้ได้ทุก action)
+  ----------------------------------------------------------- */
+  const checkLogin = async () => {
+    if (isLoggedIn) return true;
+
+    await Swal.fire({
+      icon: "warning",
+      title: "กรุณาเข้าสู่ระบบก่อน",
+      text: "ต้องเข้าสู่ระบบเพื่อทำรายการนี้",
+      confirmButtonText: "เข้าสู่ระบบ",
+    });
+
+    localStorage.setItem("redirectAfterLogin", "/community");
+    navigate("/login");
+
+    return false;
+  };
+
+  /* -----------------------------------------------------------
+      ส่งคอมเมนต์
+  ----------------------------------------------------------- */
+  const handleComment = async (e) => {
     e.preventDefault();
+
+    if (!(await checkLogin())) return;
+
     if (!commentText.trim()) return;
 
     addComment(post.id, {
@@ -75,8 +98,12 @@ function Post({ post }) {
     setCommentText("");
   };
 
-  // ↩ ส่งตอบกลับ
-  const handleReply = (index) => {
+  /* -----------------------------------------------------------
+      ส่งตอบกลับ
+  ----------------------------------------------------------- */
+  const handleReply = async (index) => {
+    if (!(await checkLogin())) return;
+
     if (!replyText.trim()) return;
 
     addReply(post.id, index, {
@@ -91,6 +118,93 @@ function Post({ post }) {
     setReplyIndex(null);
   };
 
+  /* -----------------------------------------------------------
+      แก้ไขโพสต์
+  ----------------------------------------------------------- */
+  const handleEdit = async () => {
+    if (!(await checkLogin())) return;
+
+    const { value: newText } = await Swal.fire({
+      title: "แก้ไขโพสต์",
+      input: "text",
+      inputValue: post.content,
+      confirmButtonText: "บันทึก",
+      cancelButtonText: "ยกเลิก",
+      showCancelButton: true,
+      inputValidator: (value) => {
+        if (!value) return "กรุณากรอกข้อความใหม่";
+      }
+    });
+
+    if (newText) {
+      editPost(post.id, newText);
+
+      Swal.fire({
+        icon: "success",
+        title: "แก้ไขสำเร็จ!",
+        timer: 1200,
+        showConfirmButton: false,
+      });
+    }
+  };
+
+  /* -----------------------------------------------------------
+      ลบโพสต์
+  ----------------------------------------------------------- */
+  const handleDelete = async () => {
+    if (!(await checkLogin())) return;
+
+    const result = await Swal.fire({
+      title: "ลบโพสต์นี้?",
+      text: "ไม่สามารถกู้คืนได้หลังจากลบแล้ว!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "ลบโพสต์",
+      cancelButtonText: "ยกเลิก",
+      confirmButtonColor: "#e63946",
+    });
+
+    if (result.isConfirmed) {
+      deletePost(post.id);
+
+      Swal.fire({
+        icon: "success",
+        title: "ลบโพสต์สำเร็จ!",
+        timer: 1200,
+        showConfirmButton: false,
+      });
+    }
+  };
+
+  /* -----------------------------------------------------------
+      รายงานโพสต์
+  ----------------------------------------------------------- */
+  const handleReport = async () => {
+    if (!(await checkLogin())) return;
+
+    setReportTarget({
+      postId: post.id,
+      postContent: post.content,
+      postImage: imageURL || null,
+
+      postOwner: {
+        email: owner.email,
+        username: owner.username,
+        avatar: owner.avatar,
+      },
+
+      reporter: {
+        email: user.email,
+        username: user.username,
+        avatar: user.avatar,
+      },
+
+      time: new Date().toISOString(),
+    });
+
+    setShowReportModal(true);
+  };
+
   return (
     <>
       <div className={styles.card}>
@@ -99,19 +213,18 @@ function Post({ post }) {
           <img
             src={owner.avatar}
             className={styles.avatar}
-            alt="avatar"
             onClick={() => navigate(`/profile/${owner.email}`)}
+            alt="avatar"
             style={{ cursor: "pointer" }}
           />
 
           <div className={styles.ownerInfo}>
             <strong
-              style={{ cursor: "pointer" }}
               onClick={() => navigate(`/profile/${owner.email}`)}
+              style={{ cursor: "pointer" }}
             >
               {owner.username}
             </strong>
-
             <div className={styles.time}>{timeAgo(post.time)}</div>
           </div>
 
@@ -126,61 +239,17 @@ function Post({ post }) {
 
             {showMenu && (
               <div className={styles.menuList}>
-                {/* เจ้าของโพสต์ */}
-                {user.email === post.userId && (
+                {user && user.email === post.userId ? (
                   <>
-                    <button
-                      className={styles.menuItem}
-                      onClick={() => {
-                        const newText = prompt("แก้ไขโพสต์:", post.content);
-                        if (newText !== null) editPost(post.id, newText);
-                        setShowMenu(false);
-                      }}
-                    >
+                    <button className={styles.menuItem} onClick={handleEdit}>
                       ✏️ แก้ไขโพสต์
                     </button>
-
-                    <button
-                      className={styles.menuItemDelete}
-                      onClick={() => {
-                        if (confirm("ต้องการลบโพสต์นี้?")) deletePost(post.id);
-                        setShowMenu(false);
-                      }}
-                    >
+                    <button className={styles.menuItemDelete} onClick={handleDelete}>
                       🗑 ลบโพสต์
                     </button>
                   </>
-                )}
-
-                {/* ผู้ใช้คนอื่น */}
-                {user.email !== post.userId && (
-                  <button
-                    className={styles.menuItem}
-                    onClick={() => {
-                      setReportTarget({
-                        postId: post.id,
-                        postContent: post.content,
-                        postImage: imageURL || null,
-
-                        postOwner: {
-                          email: owner.email,
-                          username: owner.username,
-                          avatar: owner.avatar,
-                        },
-
-                        reporter: {
-                          email: user.email,
-                          username: user.username,
-                          avatar: user.avatar,
-                        },
-
-                        time: new Date().toISOString(),
-                      });
-
-                      setShowReportModal(true);
-                      setShowMenu(false);
-                    }}
-                  >
+                ) : (
+                  <button className={styles.menuItem} onClick={handleReport}>
                     🚨 รายงานโพสต์
                   </button>
                 )}
@@ -192,26 +261,29 @@ function Post({ post }) {
         {/* เนื้อหาโพสต์ */}
         <div className={styles.content}>
           {post.content && <p className={styles.text}>{post.content}</p>}
-
-          {imageURL && (
-            <img src={imageURL} alt="โพสต์" className={styles.image} />
-          )}
+          {imageURL && <img src={imageURL} className={styles.image} alt="" />}
         </div>
 
-        {/* ปุ่ม Like / Comment */}
+        {/* ปุ่มต่างๆ */}
         <div className={styles.actions}>
           <button
             className={`${styles.likeBtn} ${
-              post.likes.includes(user.email) ? styles.liked : ""
+              post.likes.includes(user?.email) ? styles.liked : ""
             }`}
-            onClick={() => likePost(post.id, user.email)}
+            onClick={async () => {
+              if (!(await checkLogin())) return;
+              likePost(post.id, user.email);
+            }}
           >
             ❤️ ถูกใจ {post.likes.length}
           </button>
 
           <button
             className={styles.commentToggleBtn}
-            onClick={() => setShowCommentBox((prev) => !prev)}
+            onClick={async () => {
+              if (!(await checkLogin())) return;
+              setShowCommentBox((prev) => !prev);
+            }}
           >
             💬 แสดงความคิดเห็น
           </button>
@@ -240,17 +312,16 @@ function Post({ post }) {
                 <strong>{c.userName}</strong> {c.text}
                 <div className={styles.commentTime}>{timeAgo(c.time)}</div>
 
-                {/* ปุ่มตอบกลับ */}
                 <button
                   className={styles.replyBtn}
-                  onClick={() =>
-                    setReplyIndex(replyIndex === i ? null : i)
-                  }
+                  onClick={async () => {
+                    if (!(await checkLogin())) return;
+                    setReplyIndex(replyIndex === i ? null : i);
+                  }}
                 >
                   ↩️ ตอบกลับ
                 </button>
 
-                {/* กล่องตอบกลับ */}
                 {replyIndex === i && (
                   <div className={styles.replyForm}>
                     <input
@@ -264,20 +335,14 @@ function Post({ post }) {
                 )}
 
                 {/* Reply list */}
-                {c.replies && c.replies.length > 0 && (
+                {c.replies?.length > 0 && (
                   <div className={styles.replyList}>
                     {c.replies.map((r, idx) => (
                       <div key={idx} className={styles.replyItem}>
-                        <img
-                          src={r.avatar}
-                          className={styles.replyAvatar}
-                          alt=""
-                        />
+                        <img src={r.avatar} className={styles.replyAvatar} alt="" />
                         <div>
                           <strong>{r.userName}</strong> {r.text}
-                          <div className={styles.commentTime}>
-                            {timeAgo(r.time)}
-                          </div>
+                          <div className={styles.commentTime}>{timeAgo(r.time)}</div>
                         </div>
                       </div>
                     ))}
@@ -289,7 +354,6 @@ function Post({ post }) {
         </div>
       </div>
 
-      {/* ⭐ Modal รายงานโพสต์ */}
       {showReportModal && reportTarget && (
         <ReportModal
           post={reportTarget}

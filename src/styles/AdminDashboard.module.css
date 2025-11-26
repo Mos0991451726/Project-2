@@ -110,3 +110,123 @@
   font-weight: bold;
   color: #0055aa;
 }
+
+.profileBlock {
+  background: white;
+  margin: 40px auto;        /* อยู่ตรงกลาง */
+  padding: 30px;
+  border-radius: 14px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+  max-width: 700px;         /* ⭐ กำหนดความกว้าง */
+  width: 100%;
+}
+
+.profileTitle {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.profileItem {
+  font-size: 16px;
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.profileItem span {
+  font-weight: bold;
+  color: #003f8a;
+}
+
+/* ทำ content ทั้งหมดเป็นคอลัมน์และอยู่ตรงกลาง */
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* กล่องโปรไฟล์ */
+.profileBlock {
+  background: white;
+  padding: 30px;
+  border-radius: 14px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  width: 100%;
+  max-width: 650px;      /* ⭐ กำหนดความกว้าง */
+  margin-top: 40px;
+  text-align: left;       /* ข้อความจัดชิดซ้าย */
+}
+
+/* หัวข้อใหญ่ */
+.profileTitle {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* รายการภายใน */
+.profileItem {
+  font-size: 17px;
+  margin-bottom: 12px;
+}
+
+/* ตัวหนาของ label */
+.profileItem span {
+  font-weight: 600;
+  color: #003f8a;
+}
+
+/* ปุ่มแก้ไขข้อมูล */
+.editBtn {
+  background: #0056ff;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 15px;
+  font-size: 16px;
+  transition: 0.2s;
+}
+
+.editBtn:hover {
+  background: #003ebd;
+}
+
+/* อินพุตเวลาจะแก้ไข */
+.profileInput {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+.saveBtn {
+  margin-top: 15px;
+  background: #0d6efd; /* สีฟ้า */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.25s;
+}
+
+.saveBtn:hover {
+  background: #0a58ca;
+  transform: translateY(-1px);
+}
+
+.saveBtn:active {
+  transform: scale(0.97);
+}

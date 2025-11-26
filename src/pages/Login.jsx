@@ -9,20 +9,20 @@ function Login() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-const handleLogin = async (e) => {
-  e.preventDefault();
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-  const loggedInUser = await login(email, password);
+    const loggedInUser = await login(email, password);
 
-  if (!loggedInUser) return;
+    if (!loggedInUser) return;
 
-  // 🔹 ตรวจ role
-  if (loggedInUser.role === "admin") {
-    navigate("/admin");
-  } else {
-    navigate("/profile");
-  }
-};
+    // 🔹 ตรวจ role
+    if (loggedInUser.role === "admin") {
+      navigate("/admin");
+    } else {
+      navigate("/profile");
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -57,6 +57,11 @@ const handleLogin = async (e) => {
           สมัครสมาชิก
         </Link>
       </p>
+      <div className={styles.backHomeWrapper}>
+        <Link to="/" className={styles.backHomeBtn}>
+          ⬅ กลับไปหน้าแรก
+        </Link>
+      </div>
     </div>
   );
 }

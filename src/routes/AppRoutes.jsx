@@ -35,8 +35,10 @@ function AppRoutes() {
   return (
     <Routes>
 
+      <Route path="/" element={<Navigate to="/home" replace />} />
+
       {/* Public pages */}
-      <Route path="/" element={<Home />} />
+      <Route path="/home" element={<Home />} />
       <Route path="/property/:id" element={<PropertyDetail />} />
       <Route path="/community" element={<Community />} />
       <Route path="/about" element={<About />} />
@@ -52,14 +54,14 @@ function AppRoutes() {
       {/* Add Property */}
       <Route path="/add-property" element={requireLogin(<AddProperty />)} />
 
-      {/* Admin Routes (ทุกอันตรงกับ Sidebar แล้ว) */}
+      {/* Admin */}
       <Route path="/admin" element={requireAdmin(<AdminDashboard />)} />
       <Route path="/admin/users" element={requireAdmin(<AdminUsers />)} />
       <Route path="/admin/posts" element={requireAdmin(<AdminPosts />)} />
       <Route path="/admin/properties" element={requireAdmin(<AdminProperties />)} />
       <Route path="/admin/reports" element={requireAdmin(<AdminReports />)} />
 
-      {/* Fallback */}
+      {/* ไม่พบหน้า → กลับหน้าแรก */}
       <Route path="*" element={<Navigate to="/" replace />} />
 
     </Routes>
