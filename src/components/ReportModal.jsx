@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styles from "../styles/Modal.module.css";
 import { addReportDB } from "../utils/db";
+import Swal from "sweetalert2";
 
 function ReportModal({ post, onClose }) {
   const [reason, setReason] = useState("");
@@ -15,10 +16,12 @@ function ReportModal({ post, onClose }) {
 
   const handleSubmit = async () => {
     if (!reason) {
-      alert("กรุณาเลือกเหตุผล");
+      Swal.fire({
+        icon: "warning",
+        title: "กรุณาเลือกเหตุผล",
+      });
       return;
     }
-
     const reportData = {
       id: Date.now(),
       reason,
@@ -46,8 +49,11 @@ function ReportModal({ post, onClose }) {
 
     await addReportDB(reportData);
 
-    alert("ส่งรายงานสำเร็จ");
-    onClose();
+    Swal.fire({
+      icon: "success",
+      title: "ส่งรายงานสำเร็จ",
+      confirmButtonColor: "#28a745",
+    }); onClose();
   };
 
   return (

@@ -4,6 +4,8 @@ import { useProperties } from "../context/PropertyContext";
 import AdminSidebar from "../components/AdminSidebar";
 import PropertyPopup from "../components/PropertyPopup";
 import styles from "../styles/AdminProperties.module.css";
+import Swal from "sweetalert2";
+
 
 function AdminProperties() {
   const { properties, approveProperty, rejectProperty, closeProperty, deleteProperty, reopenProperty } = useProperties();
@@ -162,15 +164,30 @@ function AdminProperties() {
                     {/* ❌ ลบประกาศ (อนุญาตทุกสถานะ) */}
                     <button
                       onClick={() => {
-                        if (window.confirm("ต้องการลบประกาศนี้จริงหรือไม่?")) {
-                          deleteProperty(p.id);
-                        }
+                        Swal.fire({
+                          title: "ลบประกาศ?",
+                          text: "คุณต้องการลบประกาศนี้จริงหรือไม่?",
+                          icon: "warning",
+                          showCancelButton: true,
+                          confirmButtonColor: "#d33",
+                          cancelButtonColor: "#3085d6",
+                          confirmButtonText: "ลบ",
+                          cancelButtonText: "ยกเลิก",
+                        }).then((result) => {
+                          if (result.isConfirmed) {
+                            deleteProperty(p.id);
+
+                            Swal.fire({
+                              icon: "success",
+                              title: "ลบประกาศสำเร็จ",
+                            });
+                          }
+                        });
                       }}
                       className={styles.deleteBtn}
                     >
                       🗑 ลบ
                     </button>
-
                   </td>
                 </tr>
               ))}

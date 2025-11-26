@@ -1,6 +1,6 @@
 // components/AddUserModal.jsx
 import React, { useState } from "react";
-import styles from "../styles/AdminUsers.module.css";
+import styles from "../styles/AddUserModal.module.css";
 
 function AddUserModal({ onAdd, onClose }) {
   const [email, setEmail] = useState("");
@@ -49,4 +49,4 @@ function AddUserModal({ onAdd, onClose }) {
   );
 }
 
-export default AddUserModal;
+export default AddUserModal; 

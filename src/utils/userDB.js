@@ -148,6 +148,13 @@ export const addUserDB = async (email, username, role) => {
     cover: "/assets/cover-default.jpg",
     bio: "",
     joinDate: new Date().toLocaleDateString("th-TH"),
+
+    // ⭐ ต้องเพิ่ม
+    phone: "",
+    address: "",
+    facebook: "",
+    instagram: "",
+    line: "",
   };
 
   await db.put(STORE_NAME, newUser);
@@ -158,6 +165,8 @@ export const addUserDB = async (email, username, role) => {
    ค้นหา
 ----------------------------------- */
 export const searchUsers = (list, text) => {
+  if (!Array.isArray(list)) return [];   // ⭐ ป้องกัน error
+
   return list.filter(
     (u) =>
       u.email.toLowerCase().includes(text.toLowerCase()) ||

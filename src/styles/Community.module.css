@@ -23,3 +23,28 @@
   padding: 20px;
   color: #666;
 }
+
+.loginToPost {
+  background: white;
+  border: 1px solid #ff8c00;
+  color: #d97706;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 1.5rem auto;         /* ⭐ ปุ่มจะอยู่กลางโดยอัตโนมัติ */
+  display: flex;
+  justify-content: center;     /* ⭐ ข้อความอยู่ตรงกลาง */
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: 0.2s;
+  width: fit-content;          /* ⭐ ป้องกันปุ่มยืดเต็มหน้าจอ */
+}
+
+.loginToPost:hover {
+  background: #fff7e6;
+  border-color: #f59e0b;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}

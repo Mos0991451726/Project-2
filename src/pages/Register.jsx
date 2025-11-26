@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import styles from "../styles/Auth.module.css";
+import Swal from "sweetalert2";
 
 function Register() {
   const { register } = useAuth();
@@ -28,8 +29,12 @@ function Register() {
     const ok = register(email, password, username);
 
     if (ok) {
-      alert("สมัครสมาชิกสำเร็จ!");
-      navigate("/login");
+      Swal.fire({
+        icon: "success",
+        title: "สมัครสมาชิกสำเร็จ!",
+        confirmButtonText: "ไปหน้าเข้าสู่ระบบ",
+        confirmButtonColor: "#3085d6",
+      }).then(() => navigate("/login"));
     }
   };
 
