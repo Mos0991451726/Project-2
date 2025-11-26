@@ -544,3 +544,19 @@
   background: #e3f2ff;
   transform: translateY(-2px);
 }
+
+.passwordBtn {
+  background: #0d6efd;
+  border: none;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s;
+  margin-top: 5px;
+}
+
+.passwordBtn:hover {
+  background: #0b5ed7;
+}

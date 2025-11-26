@@ -5,6 +5,7 @@ import UserModal from "../components/UserModal";
 import Swal from "sweetalert2";
 import AddUserModal from "../components/AddUserModal";
 import { useAuth } from "../context/AuthContext";
+
 import {
   loadUsers,
   saveUsers,
@@ -40,12 +41,12 @@ function AdminUsers() {
   }, []);
 
   const reloadUsers = async () => {
-    const usersObj = await loadUsers();     // ⭐ await สำคัญมาก
+    const usersObj = await loadUsers();
     const arr = await usersToArray(usersObj);
     setUsers(arr);
   };
 
-  // filter + search
+  // filters
   let filtered = searchUsers(users, search);
   filtered = filterUsers(filtered, roleFilter, statusFilter);
 
@@ -53,26 +54,40 @@ function AdminUsers() {
   const totalPages = Math.ceil(filtered.length / perPage);
   const pagedUsers = paginate(filtered, page, perPage);
 
-  // action functions
+  /* ==========================================================
+      ⭐ เปลี่ยน Role
+  ==========================================================*/
   const handleRoleChange = async (email, newRole) => {
-    await updateUserRole(email, newRole);
+    Swal.fire({
+      title: "กำลังอัปเดต Role...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
 
-    const updated = users.map((u) =>
-      u.email === email ? { ...u, role: newRole } : u
-    );
-    setUsers(updated);
+    await updateUserRole(email, newRole);
+    await reloadUsers();
 
     Swal.fire({
       icon: "success",
       title: "อัปเดต Role สำเร็จ",
-      text: `${email} → ${newRole}`,
-      timer: 1400,
-      showConfirmButton: false
+      timer: 1200,
+      showConfirmButton: false,
     });
   };
-  // ⭐ แบนผู้ใช้
+
+  /* ==========================================================
+      ⭐ แบนผู้ใช้
+  ==========================================================*/
   const handleBan = async (email) => {
-    const confirm = await Swal.fire({
+    if (email === user.email) {
+      Swal.fire({
+        icon: "error",
+        title: "ไม่สามารถแบนตัวเองได้!",
+      });
+      return;
+    }
+
+    const result = await Swal.fire({
       icon: "warning",
       title: "แบนผู้ใช้?",
       text: `คุณต้องการแบน ${email} ใช่หรือไม่?`,
@@ -83,43 +98,58 @@ function AdminUsers() {
       cancelButtonColor: "#457b9d",
     });
 
-    if (!confirm.isConfirmed) return;
+    if (!result.isConfirmed) return;
+
+    Swal.fire({
+      title: "กำลังดำเนินการ...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
 
     await banUser(email);
-
-    const updated = users.map((u) =>
-      u.email === email ? { ...u, status: "banned" } : u
-    );
-    setUsers(updated);
+    await reloadUsers();
 
     Swal.fire({
       icon: "success",
       title: "แบนผู้ใช้สำเร็จ",
       timer: 1200,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
   };
 
-
-  // ⭐ ปลดแบนผู้ใช้
+  /* ==========================================================
+      ⭐ ปลดแบนผู้ใช้
+  ==========================================================*/
   const handleUnban = async (email) => {
-    await unbanUser(email);
+    Swal.fire({
+      title: "กำลังปลดแบน...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
 
-    const updated = users.map((u) =>
-      u.email === email ? { ...u, status: "active" } : u
-    );
-    setUsers(updated);
+    await unbanUser(email);
+    await reloadUsers();
 
     Swal.fire({
       icon: "success",
       title: "ปลดแบนสำเร็จ",
       timer: 1200,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
   };
 
-  // ⭐ ลบผู้ใช้
+  /* ==========================================================
+      ⭐ ลบผู้ใช้
+  ==========================================================*/
   const handleDelete = async (email) => {
+    if (email === user.email) {
+      Swal.fire({
+        icon: "error",
+        title: "คุณไม่สามารถลบบัญชีของตัวเองได้!",
+      });
+      return;
+    }
+
     const result = await Swal.fire({
       title: "ลบผู้ใช้?",
       text: "คุณต้องการลบผู้ใช้นี้จริงหรือไม่?",
@@ -128,29 +158,35 @@ function AdminUsers() {
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
       confirmButtonText: "ลบ",
-      cancelButtonText: "ยกเลิก"
+      cancelButtonText: "ยกเลิก",
     });
 
     if (!result.isConfirmed) return;
 
-    await deleteUserDB(email);
+    Swal.fire({
+      title: "กำลังลบ...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
 
-    const updated = users.filter((u) => u.email !== email);
-    setUsers(updated);
+    await deleteUserDB(email);
+    await reloadUsers();
 
     Swal.fire({
       icon: "success",
       title: "ลบผู้ใช้สำเร็จ",
       timer: 1500,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
   };
 
-  // ⭐ เพิ่มผู้ใช้ใหม่
+  /* ==========================================================
+      ⭐ เพิ่มผู้ใช้ใหม่
+  ==========================================================*/
   const handleAddUser = async (email, username, role) => {
-    const added = await addUserDB(email, username, role);
+    const result = await addUserDB(email, username, role, "123456"); // password default
 
-    if (!added) {
+    if (!result) {
       Swal.fire({
         icon: "error",
         title: "เพิ่มผู้ใช้ไม่สำเร็จ",
@@ -159,17 +195,14 @@ function AdminUsers() {
       return;
     }
 
-    // โหลดใหม่แบบถูกต้อง
-    const usersObj = await loadUsers();
-    const arr = await usersToArray(usersObj);
-    setUsers(arr);
+    await reloadUsers();
 
     Swal.fire({
       icon: "success",
       title: "เพิ่มผู้ใช้สำเร็จ",
       text: `${username} (${email})`,
       timer: 1500,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
 
     setShowAddModal(false);
@@ -236,11 +269,13 @@ function AdminUsers() {
               <th>จัดการ</th>
             </tr>
           </thead>
+
           <tbody>
             {pagedUsers.map((u) => (
               <tr key={u.email}>
                 <td>{u.email}</td>
                 <td>{u.username}</td>
+
                 <td>
                   <select
                     value={u.role}
@@ -250,6 +285,7 @@ function AdminUsers() {
                     <option value="admin">Admin</option>
                   </select>
                 </td>
+
                 <td>{u.status || "active"}</td>
 
                 <td className={styles.actions}>
@@ -262,37 +298,13 @@ function AdminUsers() {
                   ) : (
                     <button
                       className={styles.banBtn}
-                      onClick={() => {
-                        if (u.email === user.email) {
-                          Swal.fire({
-                            icon: "error",
-                            title: "ห้ามแบนตัวเอง!",
-                            text: "แอดมินไม่สามารถแบนบัญชีของตนเองได้",
-                          });
-                          return;
-                        }
-                        handleBan(u.email);
-                      }}
+                      onClick={() => handleBan(u.email)}
                     >
                       แบน
                     </button>
                   )}
 
-                  <button
-                    className={styles.deleteBtn}
-                    onClick={() => {
-                      if (u.email === user.email) {
-                        Swal.fire({
-                          icon: "error",
-                          title: "ไม่สามารถลบบัญชีของคุณเองได้",
-                          text: "แอดมินไม่สามารถลบบัญชีตัวเองได้",
-                        });
-                        return;
-                      }
-
-                      handleDelete(u.email);
-                    }}
-                  >
+                  <button className={styles.deleteBtn} onClick={() => handleDelete(u.email)}>
                     ลบ
                   </button>
                 </td>
@@ -307,7 +319,9 @@ function AdminUsers() {
             ⬅ Prev
           </button>
 
-          <span>{page} / {totalPages}</span>
+          <span>
+            {page} / {totalPages}
+          </span>
 
           <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>
             Next ➡
@@ -315,9 +329,11 @@ function AdminUsers() {
         </div>
       </div>
 
-      {/* Popup อยู่ตรงนี้ → นอก content */}
+      {/* Modal */}
       {viewUser && <UserModal user={viewUser} onClose={() => setViewUser(null)} />}
-      {showAddModal && <AddUserModal onAdd={handleAddUser} onClose={() => setShowAddModal(false)} />}
+      {showAddModal && (
+        <AddUserModal onAdd={handleAddUser} onClose={() => setShowAddModal(false)} />
+      )}
     </div>
   );
 }

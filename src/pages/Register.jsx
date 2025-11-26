@@ -9,23 +9,34 @@ function Register() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
-  const [username, setUsername] = useState(""); // ✅ เพิ่ม username
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
 
   const handleRegister = (e) => {
     e.preventDefault();
 
-    if (!email || !password || !username) {
-      alert("กรุณากรอกข้อมูลให้ครบ");
+    // 🔴 1. เช็คช่องว่าง
+    if (!email.trim() || !password.trim() || !username.trim() || !confirm.trim()) {
+      Swal.fire({
+        icon: "warning",
+        title: "ข้อมูลไม่ครบ!",
+        text: "กรุณากรอกข้อมูลให้ครบทุกช่อง",
+      });
       return;
     }
 
+    // 🔴 2. เช็ครหัสผ่านไม่ตรงกัน
     if (password !== confirm) {
-      alert("รหัสผ่านไม่ตรงกัน");
+      Swal.fire({
+        icon: "error",
+        title: "รหัสผ่านไม่ตรงกัน!",
+        text: "กรุณากรอกรหัสผ่านให้ตรงกันทั้งสองช่อง",
+      });
       return;
     }
 
+    // 🔴 3. สมัครสมาชิก
     const ok = register(email, password, username);
 
     if (ok) {
@@ -35,6 +46,12 @@ function Register() {
         confirmButtonText: "ไปหน้าเข้าสู่ระบบ",
         confirmButtonColor: "#3085d6",
       }).then(() => navigate("/login"));
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "สมัครไม่สำเร็จ!",
+        text: "อีเมลนี้มีผู้ใช้แล้ว หรือเกิดข้อผิดพลาด",
+      });
     }
   };
 

@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { usePosts } from "../context/PostContext";
 import styles from "../styles/PostForm.module.css";
+import Swal from "sweetalert2";
 
 function PostForm() {
   const { user } = useAuth();
@@ -22,9 +23,16 @@ function PostForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!content.trim() && !image) return;
 
-    // ⭐ ส่ง Blob ให้ PostContext
+    if (!content.trim() && !image) {
+      Swal.fire({
+        icon: "warning",
+        title: "ไม่สามารถโพสต์ได้",
+        text: "กรุณาพิมพ์ข้อความหรือเลือกรูปอย่างน้อย 1 อย่าง",
+      });
+      return;
+    }
+
     addPost(content, image);
 
     setContent("");

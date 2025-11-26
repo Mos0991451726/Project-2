@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import styles from "../styles/Auth.module.css";
+import Swal from "sweetalert2";
 
 function Login() {
   const { login } = useAuth();
@@ -9,20 +10,27 @@ function Login() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+  const [loading, setLoading] = useState(false);
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    if (loading) return;    // ⭐ ป้องกันกดซ้ำ
+    setLoading(true);
+
     const loggedInUser = await login(email, password);
+
+    setLoading(false);
 
     if (!loggedInUser) return;
 
-    // 🔹 ตรวจ role
     if (loggedInUser.role === "admin") {
       navigate("/admin");
     } else {
       navigate("/profile");
     }
   };
+
 
   return (
     <div className={styles.container}>
@@ -45,8 +53,8 @@ function Login() {
           className={styles.input}
         />
 
-        <button type="submit" className={styles.button}>
-          เข้าสู่ระบบ
+        <button type="submit" className={styles.button} disabled={loading}>
+          {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
         </button>
       </form>
 
@@ -57,6 +65,7 @@ function Login() {
           สมัครสมาชิก
         </Link>
       </p>
+
       <div className={styles.backHomeWrapper}>
         <Link to="/" className={styles.backHomeBtn}>
           ⬅ กลับไปหน้าแรก

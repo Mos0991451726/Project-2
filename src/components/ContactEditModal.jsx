@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styles from "../styles/Profile.module.css";
+import Swal from "sweetalert2";
 
 function ContactEditModal({ user, onClose, onSave }) {
   const [phone, setPhone] = useState(user.phone || "");
@@ -9,13 +10,40 @@ function ContactEditModal({ user, onClose, onSave }) {
   const [line, setLine] = useState(user.line || "");
 
   const handleSave = () => {
+    // ⭐ Validate เบอร์โทร: ต้องเป็นตัวเลข 0–9 เท่านั้น
+    if (phone && !/^[0-9]+$/.test(phone)) {
+      Swal.fire({
+        icon: "error",
+        title: "เบอร์โทรไม่ถูกต้อง!",
+        text: "กรุณากรอกเฉพาะตัวเลข 0–9 เท่านั้น",
+      });
+      return;
+    }
+
+    // ⭐ จำกัดเบอร์โทรขั้นต่ำ 9 หรือ 10 ตัว (ไทย)
+    if (phone && phone.length < 9) {
+      Swal.fire({
+        icon: "warning",
+        title: "เบอร์โทรสั้นเกินไป!",
+        text: "ควรมีอย่างน้อย 9–10 หลัก",
+      });
+      return;
+    }
+
     onSave({
       ...user,
       phone,
       address,
       facebook,
       instagram,
-      line
+      line,
+    });
+
+    Swal.fire({
+      icon: "success",
+      title: "บันทึกสำเร็จ!",
+      timer: 1200,
+      showConfirmButton: false,
     });
 
     onClose();
@@ -31,6 +59,7 @@ function ContactEditModal({ user, onClose, onSave }) {
           <label>เบอร์โทร</label>
           <input
             type="text"
+            maxLength={10}      // ⭐ จำกัด 10 ตัวอักษร
             className={styles.inputBox}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}

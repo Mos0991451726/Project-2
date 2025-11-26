@@ -120,6 +120,16 @@ export const AuthProvider = ({ children }) => {
       return false;
     }
 
+    // ⛔ ถ้าผู้ใช้โดนแบน
+    if (found.status === "banned") {
+      await Swal.fire({
+        icon: "error",
+        title: "บัญชีนี้ถูกระงับ",
+        text: "กรุณาติดต่อผู้ดูแลระบบ",
+      });
+      return false;
+    }
+
     if (found.password !== password) {
       await Swal.fire({
         icon: "error",
@@ -128,7 +138,6 @@ export const AuthProvider = ({ children }) => {
       return false;
     }
 
-    // ⭐ เก็บเฉพาะอีเมลเท่านั้น
     localStorage.setItem("currentUser", found.email);
     setUser(found);
     setIsLoggedIn(true);
@@ -142,45 +151,50 @@ export const AuthProvider = ({ children }) => {
 
     return found;
   };
-
-/* --------------------------------------------------
-   ⭐ Update User (อัปเดตใน IndexedDB เท่านั้น)
--------------------------------------------------- */
-const updateUser = async (updatedInfo) => {
+  /* --------------------------------------------------
+     ⭐ Update User (อัปเดตใน IndexedDB เท่านั้น)
+  -------------------------------------------------- */
+const updateUser = async (updatedInfo, mode = "profile") => {
   if (!user) return;
 
-  // ดึงข้อมูลล่าสุดจาก IndexedDB
+  // โหลดข้อมูลปัจจุบันจาก DB
   const current = await getUserByEmail(user.email);
 
-  // รวมข้อมูลใหม่เข้ากับข้อมูลเดิม
+  // รวมข้อมูลใหม่ (ดึงจาก current ไม่ใช่ user ที่ส่งมาจาก Modal)
   const updatedUser = {
     ...current,
 
-    // ข้อมูลพื้นฐาน
+    // ⭐ โปรไฟล์พื้นฐาน
     username: updatedInfo.username ?? current.username,
     bio: updatedInfo.bio ?? current.bio,
     avatar: updatedInfo.avatar ?? current.avatar,
     cover: updatedInfo.cover ?? current.cover,
 
-    // ⭐ ช่องทางการติดต่อ
-    phone: updatedInfo.phone ?? current.phone,
-    address: updatedInfo.address ?? current.address,
-    facebook: updatedInfo.facebook ?? current.facebook,
-    instagram: updatedInfo.instagram ?? current.instagram,
-    line: updatedInfo.line ?? current.line,
+    // ⭐ ข้อมูลติดต่อ
+    phone: updatedInfo.phone ?? current.phone ?? "",
+    address: updatedInfo.address ?? current.address ?? "",
+    facebook: updatedInfo.facebook ?? current.facebook ?? "",
+    instagram: updatedInfo.instagram ?? current.instagram ?? "",
+    line: updatedInfo.line ?? current.line ?? "",
+
+    // ⭐ เปลี่ยนรหัสผ่านเฉพาะตอน mode = "password"
+    password: mode === "password"
+      ? updatedInfo.password
+      : current.password,
   };
 
-  // บันทึกลง IndexedDB
+  // บันทึก
   await saveUser(updatedUser);
 
   // อัปเดต state React
   setUser(updatedUser);
 
-  // แจ้งเตือน
   Swal.fire({
     icon: "success",
-    title: "อัปเดตโปรไฟล์สำเร็จ!",
-    timer: 1000,
+    title: mode === "password"
+      ? "อัปเดตรหัสผ่านสำเร็จ!"
+      : "อัปเดตโปรไฟล์สำเร็จ!",
+    timer: 1200,
     showConfirmButton: false,
   });
 };

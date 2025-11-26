@@ -1,6 +1,6 @@
-// EditProfileModal.jsx
 import React, { useState, useRef } from "react";
 import styles from "../styles/Profile.module.css";
+import Swal from "sweetalert2";
 
 function EditProfileModal({ user, onClose, onSave }) {
   const [username, setUsername] = useState(user.username);
@@ -19,14 +19,79 @@ function EditProfileModal({ user, onClose, onSave }) {
     reader.readAsDataURL(file);
   };
 
-  const handleSave = () => {
-    onSave({
-      ...user,
-      username,
-      bio,
-      avatar,
-      cover,
+  /* ---------------------------------------------------------
+      ⭐ เปลี่ยนรหัสผ่าน
+  ---------------------------------------------------------- */
+  const handleChangePassword = async () => {
+    const result = await Swal.fire({
+      title: "ตั้งรหัสผ่านใหม่",
+      html: `
+        <input id="newpass" type="password" class="swal2-input" placeholder="รหัสผ่านใหม่">
+        <input id="confirmpass" type="password" class="swal2-input" placeholder="ยืนยันรหัสผ่าน">
+      `,
+      confirmButtonText: "บันทึกรหัสผ่าน",
+      showCancelButton: true,
+      cancelButtonText: "ยกเลิก",
+      preConfirm: () => {
+        const pass = document.getElementById("newpass").value;
+        const confirm = document.getElementById("confirmpass").value;
+
+        if (!pass || !confirm) {
+          Swal.showValidationMessage("กรุณากรอกรหัสผ่านให้ครบ");
+          return false;
+        }
+
+        if (pass !== confirm) {
+          Swal.showValidationMessage("รหัสผ่านไม่ตรงกัน!");
+          return false;
+        }
+
+        return pass;
+      },
     });
+
+    if (!result.isConfirmed) return;
+
+    onSave(
+      {
+        ...user,
+        password: result.value,
+      },
+      "password"
+    );
+
+    Swal.fire({
+      icon: "success",
+      title: "เปลี่ยนรหัสผ่านสำเร็จ!",
+      timer: 1200,
+      showConfirmButton: false,
+    });
+  };
+
+  /* ---------------------------------------------------------
+      ⭐ บันทึกข้อมูลโปรไฟล์
+  ---------------------------------------------------------- */
+  const handleSave = () => {
+    if (!username.trim()) {
+      Swal.fire({
+        icon: "warning",
+        title: "ชื่อผู้ใช้ห้ามเว้นว่าง!",
+        text: "กรุณากรอกชื่อผู้ใช้ก่อนบันทึก",
+      });
+      return;
+    }
+
+    onSave(
+      {
+        ...user,
+        username,
+        bio,
+        avatar,
+        cover,
+      },
+      "profile"
+    );
+
     onClose();
   };
 
@@ -35,11 +100,10 @@ function EditProfileModal({ user, onClose, onSave }) {
       <div className={styles.editModal}>
         <h2>แก้ไขโปรไฟล์</h2>
 
+        {/* ==================== รูปโปรไฟล์ ==================== */}
         <div className={styles.editSection}>
           <div className={styles.sectionHeader}>
             <span className={styles.titleLeft}>รูปโปรไฟล์</span>
-
-            {/* ปุ่มแก้ไข เปิด input file */}
             <button
               className={styles.editLinkBtn}
               onClick={() => avatarInputRef.current.click()}
@@ -50,7 +114,6 @@ function EditProfileModal({ user, onClose, onSave }) {
 
           <img src={avatar} className={styles.previewAvatar} />
 
-          {/* input file หลัก (ซ่อน) */}
           <input
             type="file"
             ref={avatarInputRef}
@@ -60,11 +123,10 @@ function EditProfileModal({ user, onClose, onSave }) {
           />
         </div>
 
-
+        {/* ==================== รูปหน้าปก ==================== */}
         <div className={styles.editSection}>
           <div className={styles.sectionHeader}>
             <span className={styles.titleLeft}>รูปหน้าปก</span>
-
             <button
               className={styles.editLinkBtn}
               onClick={() => coverInputRef.current.click()}
@@ -84,7 +146,7 @@ function EditProfileModal({ user, onClose, onSave }) {
           />
         </div>
 
-
+        {/* ==================== ชื่อผู้ใช้ / Bio ==================== */}
         <div className={styles.editSection}>
           <label>ชื่อผู้ใช้</label>
           <input
@@ -104,6 +166,14 @@ function EditProfileModal({ user, onClose, onSave }) {
           />
         </div>
 
+        {/* ==================== ปุ่มตั้งรหัสผ่านใหม่ ==================== */}
+        <div className={styles.editSection}>
+          <button className={styles.passwordBtn} onClick={handleChangePassword}>
+            🔐 ตั้งรหัสผ่านใหม่
+          </button>
+        </div>
+
+        {/* ==================== ปุ่มบันทึก / ยกเลิก ==================== */}
         <div className={styles.editActions}>
           <button onClick={handleSave} className={styles.saveBtn}>
             💾 บันทึก

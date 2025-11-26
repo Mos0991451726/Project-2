@@ -192,3 +192,17 @@ export const paginate = (list, page, perPage) => {
   const start = (page - 1) * perPage;
   return list.slice(start, start + perPage);
 };
+
+/* --------------------------------
+   อัปเดตรหัสผ่านของผู้ใช้รายคน
+----------------------------------- */
+export const updateUserPassword = async (email, newPassword) => {
+  const db = await getDB();
+  const user = await db.get(STORE_NAME, email);
+  if (!user) return false;
+
+  user.password = newPassword;
+
+  await db.put(STORE_NAME, user);
+  return true;
+};

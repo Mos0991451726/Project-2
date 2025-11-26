@@ -267,9 +267,8 @@ function Post({ post, checkLogin: parentCheck }) {
         {/* ปุ่มต่างๆ */}
         <div className={styles.actions}>
           <button
-            className={`${styles.likeBtn} ${
-              post.likes.includes(user?.email) ? styles.liked : ""
-            }`}
+            className={`${styles.likeBtn} ${post.likes.includes(user?.email) ? styles.liked : ""
+              }`}
             onClick={async () => {
               if (!(await checkLogin())) return;
               likePost(post.id, user.email);
@@ -309,7 +308,13 @@ function Post({ post, checkLogin: parentCheck }) {
               <img src={c.avatar} className={styles.commentAvatar} alt="" />
 
               <div>
-                <strong>{c.userName}</strong> {c.text}
+                <strong
+                  style={{ cursor: "pointer" }}
+                  onClick={() => navigate(`/profile/${c.userId}`)}
+                >
+                  {c.userName}
+                </strong> {c.text}
+
                 <div className={styles.commentTime}>{timeAgo(c.time)}</div>
 
                 <button
@@ -334,14 +339,21 @@ function Post({ post, checkLogin: parentCheck }) {
                   </div>
                 )}
 
-                {/* Reply list */}
+                {/* reply list */}
                 {c.replies?.length > 0 && (
                   <div className={styles.replyList}>
                     {c.replies.map((r, idx) => (
                       <div key={idx} className={styles.replyItem}>
                         <img src={r.avatar} className={styles.replyAvatar} alt="" />
+
                         <div>
-                          <strong>{r.userName}</strong> {r.text}
+                          <strong
+                            style={{ cursor: "pointer" }}
+                            onClick={() => navigate(`/profile/${r.userId}`)}
+                          >
+                            {r.userName}
+                          </strong> {r.text}
+
                           <div className={styles.commentTime}>{timeAgo(r.time)}</div>
                         </div>
                       </div>
@@ -352,6 +364,7 @@ function Post({ post, checkLogin: parentCheck }) {
             </div>
           ))}
         </div>
+
       </div>
 
       {showReportModal && reportTarget && (

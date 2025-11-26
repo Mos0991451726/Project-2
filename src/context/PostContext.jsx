@@ -3,6 +3,10 @@ import { useAuth } from "./AuthContext";
 import { openDB, getAllPosts, addPostDB, updatePostDB, deletePostDB } from "../utils/db";
 import { addReportDB } from "../utils/db";
 import { getUserByEmail } from "../utils/userDB";
+import Swal from "sweetalert2";
+import { getAllReports } from "../utils/db";
+
+
 
 const PostContext = createContext();
 export const usePosts = () => useContext(PostContext);
@@ -124,13 +128,37 @@ export const PostProvider = ({ children }) => {
   };
 
   const reportPost = async (post, reporterEmail, reason) => {
-    // ⭐ สร้าง UUID ปลอดภัย ไม่ซ้ำ
+    // ❗ ตรวจเหตุผล
+    if (!reason || !reason.trim()) {
+      Swal.fire({
+        icon: "warning",
+        title: "กรุณาเลือกหรือพิมพ์เหตุผล",
+        text: "คุณต้องระบุเหตุผลก่อนส่งรายงาน",
+      });
+      return;
+    }
+
+    // ⭐ โหลดรายงานทั้งหมดก่อนเพื่อตรวจว่าซ้ำไหม
+    const allReports = await getAllReports();
+
+    const alreadyReported = allReports.some(
+      (r) => r.postId === post.id && r.reporter?.email === reporterEmail
+    );
+
+    if (alreadyReported) {
+      Swal.fire({
+        icon: "info",
+        title: "คุณได้รายงานโพสต์นี้ไปแล้ว",
+        text: "ไม่สามารถรายงานโพสต์เดิมซ้ำได้",
+      });
+      return;
+    }
+
+    // ⭐ สร้าง UUID
     const reportId = crypto.randomUUID();
 
-    // ⭐ โหลดข้อมูลล่าสุดของเจ้าของโพสต์
+    // ⭐ โหลดข้อมูลผู้โพสต์และผู้รายงาน
     const postOwner = await getUserByEmail(post.userId);
-
-    // ⭐ โหลดข้อมูลล่าสุดของผู้รายงาน
     const reporter = await getUserByEmail(reporterEmail);
 
     const reportData = {
@@ -139,14 +167,12 @@ export const PostProvider = ({ children }) => {
       postContent: post.content,
       postImage: post.image || null,
 
-      // ⭐ เจ้าของโพสต์ (snapshot ล่าสุด)
       postOwner: {
         email: postOwner?.email || post.userId,
         username: postOwner?.username || post.userName,
         avatar: postOwner?.avatar || post.avatar,
       },
 
-      // ⭐ ผู้รายงาน (snapshot ล่าสุด)
       reporter: {
         email: reporter?.email || reporterEmail,
         username: reporter?.username || "unknown",
@@ -157,9 +183,17 @@ export const PostProvider = ({ children }) => {
       time: new Date().toISOString(),
     };
 
+    // ⭐ บันทึกลงฐานข้อมูล
     await addReportDB(reportData);
 
-    alert("📨 รายงานถูกส่งถึงแอดมินแล้ว!");
+    // 🎉 Popup ส่งรายงานสำเร็จ
+    Swal.fire({
+      icon: "success",
+      title: "ส่งรายงานสำเร็จ!",
+      text: "ทีมแอดมินจะตรวจสอบโพสต์นี้โดยเร็วที่สุด",
+      showConfirmButton: false,
+      timer: 1500,
+    });
   };
 
   const toggleHidePost = async (postId) => {

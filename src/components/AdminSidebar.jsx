@@ -1,61 +1,56 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import Swal from "sweetalert2";
 import styles from "../styles/AdminSidebar.module.css";
 
 function AdminSidebar() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { logout } = useAuth();
+
+  const menuItems = [
+    { label: "Dashboard", icon: "📊", path: "/admin" },
+    { label: "จัดการผู้ใช้", icon: "👤", path: "/admin/users" },
+    { label: "จัดการโพสต์", icon: "📝", path: "/admin/posts" },
+    { label: "จัดการอสังหา", icon: "🏘️", path: "/admin/properties" },
+    { label: "รายงาน", icon: "🚨", path: "/admin/reports" },
+  ];
+
+  const handleLogoutToProfile = async () => {
+    const result = await Swal.fire({
+      icon: "question",
+      title: "กลับหน้าโปรไฟล์?",
+      text: "ต้องการออกจากหน้าแอดมินและกลับสู่โปรไฟล์หรือไม่?",
+      showCancelButton: true,
+      confirmButtonText: "กลับหน้ารโปรไฟล์",
+      cancelButtonText: "ยกเลิก",
+    });
+
+    if (result.isConfirmed) {
+      navigate("/profile");
+    }
+  };
 
   return (
     <div className={styles.sidebar}>
-      <h2>Admin Panel</h2>
+      <h2 className={styles.title}>⚙️ Admin Panel</h2>
 
       <div className={styles.menu}>
+        {menuItems.map((item) => (
+          <button
+            key={item.path}
+            className={`${styles.menuItem} ${
+              location.pathname === item.path ? styles.active : ""
+            }`}
+            onClick={() => navigate(item.path)}
+          >
+            <span className={styles.icon}>{item.icon}</span> {item.label}
+          </button>
+        ))}
 
-        {/* Dashboard */}
-        <button
-          className={styles.menuItem}
-          onClick={() => navigate("/admin")}
-        >
-          Dashboard
-        </button>
-
-        {/* จัดการผู้ใช้ */}
-        <button
-          className={styles.menuItem}
-          onClick={() => navigate("/admin/users")}
-        >
-          จัดการผู้ใช้
-        </button>
-
-        {/* จัดการโพสต์ */}
-        <button
-          className={styles.menuItem}
-          onClick={() => navigate("/admin/posts")}
-        >
-          จัดการโพสต์
-        </button>
-
-        {/* จัดการอสังหา */}
-        <button
-          className={styles.menuItem}
-          onClick={() => navigate("/admin/properties")}
-        >
-          จัดการอสังหา
-        </button>
-
-        {/* รายงาน */}
-        <button
-          className={styles.menuItem}
-          onClick={() => navigate("/admin/reports")}
-        >
-          รายงาน
-        </button>
-
-        {/* กลับหน้าโปรไฟล์ */}
-        <button
-          className={styles.logout}
-          onClick={() => navigate("/profile")}
-        >
+        {/* ปุ่มกลับโปรไฟล์ */}
+        <button className={styles.logout} onClick={handleLogoutToProfile}>
           🔙 กลับหน้าโปรไฟล์
         </button>
       </div>
