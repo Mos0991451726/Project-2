@@ -29,11 +29,13 @@
   padding: 0;
 }
 
+.links li span,
 .links li a {
   color: white;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
 }
 
 .links li a:hover {
@@ -103,3 +105,4 @@
     margin-top: 0.5rem;
   }
 }
+

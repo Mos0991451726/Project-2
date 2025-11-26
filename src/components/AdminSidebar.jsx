@@ -10,50 +10,55 @@ function AdminSidebar() {
       <h2>Admin Panel</h2>
 
       <div className={styles.menu}>
+
+        {/* Dashboard */}
         <button
-          type="button"
           className={styles.menuItem}
           onClick={() => navigate("/admin")}
         >
           Dashboard
         </button>
 
+        {/* จัดการผู้ใช้ */}
         <button
-          type="button"
           className={styles.menuItem}
-          onClick={() => navigate("/admin/manage")}
+          onClick={() => navigate("/admin/users")}
         >
           จัดการผู้ใช้
         </button>
 
+        {/* จัดการโพสต์ */}
         <button
-          type="button"
           className={styles.menuItem}
           onClick={() => navigate("/admin/posts")}
         >
           จัดการโพสต์
         </button>
 
+        {/* จัดการอสังหา */}
         <button
-          type="button"
           className={styles.menuItem}
           onClick={() => navigate("/admin/properties")}
         >
           จัดการอสังหา
         </button>
 
+        {/* รายงาน */}
         <button
-          type="button"
           className={styles.menuItem}
           onClick={() => navigate("/admin/reports")}
         >
           รายงาน
         </button>
-      </div>
 
-      <button type="button" className={styles.logout}>
-        ออกจากระบบ
-      </button>
+        {/* กลับหน้าโปรไฟล์ */}
+        <button
+          className={styles.logout}
+          onClick={() => navigate("/profile")}
+        >
+          🔙 กลับหน้าโปรไฟล์
+        </button>
+      </div>
     </div>
   );
 }

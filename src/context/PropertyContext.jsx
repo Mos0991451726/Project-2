@@ -1,55 +1,137 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import {
+  getAllProperties,
+  addPropertyToDB,
+  updatePropertyInDB,
+  deletePropertyFromDB,
+  toggleFavoriteInDB,
+  getFavorites,
+} from "../utils/propertyDB";
+import { useAuth } from "../context/AuthContext";
 
-// Context
 const PropertyContext = createContext();
 export const useProperties = () => useContext(PropertyContext);
 
 export const PropertyProvider = ({ children }) => {
   const [properties, setProperties] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const { user } = useAuth();
 
-  // ⭐ โหลดข้อมูลจาก localStorage ตอนเริ่มต้น
+  // ================================
+  // ⭐ โหลดข้อมูลครั้งแรก
+  // ================================
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("posts") || "[]");
-    setProperties(stored);
+    loadProperties();
+    loadFavoriteList();
   }, []);
 
-  // ฟังก์ชันเพิ่มประกาศ
-  const addProperty = (property) => {
+  const loadProperties = async () => {
+    const data = await getAllProperties();
+    setProperties(data);
+  };
+
+  const loadFavoriteList = async () => {
+    const favList = await getFavorites();
+    setFavorites(favList.map((f) => f.id));
+  };
+
+  // ================================
+  // ⭐ เพิ่มประกาศใหม่
+  // ================================
+  const addProperty = async (property) => {
     const now = new Date().toISOString();
+
     const newProperty = {
-      id: Date.now(),
-      status: "pending", // รออนุมัติ
-      time: now,         // เก็บเวลาโพสต์
       ...property,
+      id: Date.now(),
+      time: now,
+      status: "pending",
+      ownerEmail: user?.email,
+      ownerName: user?.username,
+      ownerAvatar: user?.avatar,
     };
 
-    const updated = [newProperty, ...properties];
-
-    // อัปเดต state + localStorage
-    setProperties(updated);
-    localStorage.setItem("posts", JSON.stringify(updated));
+    await addPropertyToDB(newProperty);
+    await loadProperties();
   };
 
-  // อนุมัติประกาศ
-  const approveProperty = (id) => {
-    const updated = properties.map((p) =>
-      p.id === id ? { ...p, status: "approved" } : p
-    );
-    setProperties(updated);
-    localStorage.setItem("posts", JSON.stringify(updated));
+  // ================================
+  // ⭐ อนุมัติประกาศ
+  // ================================
+  const approveProperty = async (id) => {
+    const target = properties.find((p) => p.id === id);
+    if (!target) return;
+
+    const updated = { ...target, status: "approved" };
+    await updatePropertyInDB(updated);
+    await loadProperties();
   };
 
-  // ลบ/ปฏิเสธประกาศ
-  const rejectProperty = (id) => {
-    const updated = properties.filter((p) => p.id !== id);
-    setProperties(updated);
-    localStorage.setItem("posts", JSON.stringify(updated));
+  // ================================
+  // ⭐ ปฏิเสธ (ลบ)
+  // ================================
+  const rejectProperty = async (id) => {
+    await deletePropertyFromDB(id);
+    await loadProperties();
+  };
+
+  // ================================
+  // ⭐ ปิดประกาศ (เปลี่ยนสถานะเป็น closed)
+  // ================================
+  const closeProperty = async (id) => {
+    const target = properties.find((p) => p.id === id);
+    if (!target) return;
+
+    const updated = { ...target, status: "closed" };
+
+    await updatePropertyInDB(updated);
+    await loadProperties();
+  };
+
+  // ⭐ เปิดประกาศอีกครั้ง (เปลี่ยน closed → approved)
+const reopenProperty = async (id) => {
+  const target = properties.find((p) => p.id === id);
+  if (!target) return;
+
+  const updated = { ...target, status: "approved" };
+
+  await updatePropertyInDB(updated);
+  await loadProperties();
+};
+
+
+  // ================================
+  // ⭐ ลบประกาศถาวร
+  // ================================
+  const deleteProperty = async (id) => {
+    await deletePropertyFromDB(id);
+    await loadProperties();
+  };
+
+  // ================================
+  // ⭐ Favorite Toggle
+  // ================================
+  const toggleFavorite = async (propertyId) => {
+    const isFavNow = await toggleFavoriteInDB(propertyId);
+    await loadFavoriteList();
+    return isFavNow;
+  };
+
+  const value = {
+    properties,
+    favorites,
+    addProperty,
+    approveProperty,
+    rejectProperty,
+    toggleFavorite,
+    closeProperty,
+    deleteProperty,
+    loadProperties,
+    reopenProperty
   };
 
   return (
-    <PropertyContext.Provider
-      value={{ properties, addProperty, approveProperty, rejectProperty }}
-    >
+    <PropertyContext.Provider value={value}>
       {children}
     </PropertyContext.Provider>
   );

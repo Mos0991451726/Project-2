@@ -1,9 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
-import { openDB, getAllPosts, addPostDB, updatePostDB, deletePostDB } from "../utils/db"; 
+import { openDB, getAllPosts, addPostDB, updatePostDB, deletePostDB } from "../utils/db";
 import { addReportDB } from "../utils/db";
-
-
+import { getUserByEmail } from "../utils/userDB";
 
 const PostContext = createContext();
 export const usePosts = () => useContext(PostContext);
@@ -24,27 +23,27 @@ export const PostProvider = ({ children }) => {
   /* ----------------------------------------
     🟩 เพิ่มโพสต์
   ---------------------------------------- */
-const addPost = async (content, imageBlob) => {
-  if (!user) return;
+  const addPost = async (content, imageBlob) => {
+    if (!user) return;
 
-  const newPost = {
-    userId: user.email,
-    userName: user.username,
-    avatar: user.avatar ?? "/assets/default-avatar.png",
-    content,
-    image: imageBlob || null,
-    time: new Date().toISOString(),
-    comments: [],
-    likes: [],
-    hidden: false,
+    const newPost = {
+      userId: user.email,
+      userName: user.username,
+      avatar: user.avatar ?? "/assets/default-avatar.png",
+      content,
+      image: imageBlob || null,
+      time: new Date().toISOString(),
+      comments: [],
+      likes: [],
+      hidden: false,
+    };
+
+    // ⭐ บันทึกลง IndexedDB
+    const id = await addPostDB(newPost);
+
+    // ⭐ อัปเดต state
+    setPosts((prev) => [...prev, { ...newPost, id }]);
   };
-
-  // ⭐ บันทึกลง IndexedDB
-  const id = await addPostDB(newPost);
-
-  // ⭐ อัปเดต state
-  setPosts((prev) => [...prev, { ...newPost, id }]);
-};
 
   /* ----------------------------------------
     🟥 ลบโพสต์
@@ -125,30 +124,54 @@ const addPost = async (content, imageBlob) => {
   };
 
   const reportPost = async (post, reporterEmail, reason) => {
-  const reportData = {
-    postId: post.id,
-    postOwner: post.userId,
-    reportedBy: reporterEmail,
-    reason,
-    postContent: post.content,
-    time: new Date().toISOString(),
+    // ⭐ สร้าง UUID ปลอดภัย ไม่ซ้ำ
+    const reportId = crypto.randomUUID();
+
+    // ⭐ โหลดข้อมูลล่าสุดของเจ้าของโพสต์
+    const postOwner = await getUserByEmail(post.userId);
+
+    // ⭐ โหลดข้อมูลล่าสุดของผู้รายงาน
+    const reporter = await getUserByEmail(reporterEmail);
+
+    const reportData = {
+      id: reportId,
+      postId: post.id,
+      postContent: post.content,
+      postImage: post.image || null,
+
+      // ⭐ เจ้าของโพสต์ (snapshot ล่าสุด)
+      postOwner: {
+        email: postOwner?.email || post.userId,
+        username: postOwner?.username || post.userName,
+        avatar: postOwner?.avatar || post.avatar,
+      },
+
+      // ⭐ ผู้รายงาน (snapshot ล่าสุด)
+      reporter: {
+        email: reporter?.email || reporterEmail,
+        username: reporter?.username || "unknown",
+        avatar: reporter?.avatar || "/assets/default-avatar.png",
+      },
+
+      reason,
+      time: new Date().toISOString(),
+    };
+
+    await addReportDB(reportData);
+
+    alert("📨 รายงานถูกส่งถึงแอดมินแล้ว!");
   };
 
-  await addReportDB(reportData);
-
-  alert("📨 รายงานถูกส่งถึงแอดมินแล้ว!");
-};
-
-const toggleHidePost = async (postId) => {
-  setPosts(prev =>
-    prev.map(p => {
-      if (p.id !== postId) return p;
-      const updated = { ...p, hidden: !p.hidden };
-      updatePostDB(updated);
-      return updated;
-    })
-  );
-};
+  const toggleHidePost = async (postId) => {
+    setPosts(prev =>
+      prev.map(p => {
+        if (p.id !== postId) return p;
+        const updated = { ...p, hidden: !p.hidden };
+        updatePostDB(updated);
+        return updated;
+      })
+    );
+  };
 
 
   return (

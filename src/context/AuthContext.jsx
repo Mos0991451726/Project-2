@@ -1,126 +1,145 @@
+// src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";  
+import { useNavigate } from "react-router-dom";
+
+import {
+  getUserByEmail,
+  saveUser,
+  getAllUsers
+} from "../utils/userDB";
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
-// โหลดผู้ใช้ทั้งหมด
-const getAllUsers = () => {
-  return JSON.parse(localStorage.getItem("users")) || {};
-};
-
-// บันทึกผู้ใช้ทั้งหมด
-const saveAllUsers = (users) => {
-  localStorage.setItem("users", JSON.stringify(users));
-};
-
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
+
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loading, setLoading] = useState(true);   // ⭐ สำคัญที่สุด
+  const [loading, setLoading] = useState(true);
 
-  // ⭐ เพิ่ม admin ถ้ายังไม่มี
-  const ensureDefaultAdmin = () => {
-    const users = getAllUsers();
+  // ⭐ สร้าง Admin เริ่มต้นถ้ายังไม่มี
+  const ensureDefaultAdmin = async () => {
+    const admin = await getUserByEmail("admin@example.com");
 
-    if (!users["admin@example.com"]) {
-      users["admin@example.com"] = {
+    if (!admin) {
+      const newAdmin = {
         email: "admin@example.com",
         password: "123456",
         username: "Administrator",
         role: "admin",
+        status: "active",
         avatar: "/assets/default-avatar.png",
         cover: "/assets/cover-default.jpg",
         bio: "I am the system admin",
         joinDate: new Date().toLocaleDateString("th-TH"),
       };
-      saveAllUsers(users);
+
+      await saveUser(newAdmin);
     }
   };
 
+  // โหลด User หลัง refresh
   useEffect(() => {
-    ensureDefaultAdmin();
+    const loadUser = async () => {
+      setLoading(true);
 
-    const users = getAllUsers();
-    const currentEmail = localStorage.getItem("currentUser");
+      await ensureDefaultAdmin();
 
-    if (currentEmail && users[currentEmail]) {
-      setUser(users[currentEmail]);
-      setIsLoggedIn(true);
-    }
+      const email = localStorage.getItem("currentUser");
 
-    setLoading(false);   // ⭐ บอกว่าโหลดเสร็จแล้ว
+      if (email) {
+        const foundUser = await getUserByEmail(email);
+        if (foundUser) {
+          setUser(foundUser);
+          setIsLoggedIn(true);
+        }
+      }
+
+      setLoading(false);
+    };
+
+    loadUser();
   }, []);
 
-  // สมัครสมาชิก
-  const register = (email, password, username) => {
-    const users = getAllUsers();
+  // Register
+  const register = async (email, password, username) => {
+    const exist = await getUserByEmail(email);
 
-    if (users[email]) {
+    if (exist) {
       alert("อีเมลนี้ถูกใช้แล้ว");
       return false;
     }
 
-    users[email] = {
+    const newUser = {
       email,
       password,
       username,
       role: "user",
+      status: "active",
       avatar: "/assets/default-avatar.png",
       cover: "/assets/cover-default.jpg",
       bio: "",
       joinDate: new Date().toLocaleDateString("th-TH"),
     };
 
-    saveAllUsers(users);
+    await saveUser(newUser);
     return true;
   };
 
-  // ล็อกอิน
-  const login = (email, password) => {
-    const users = getAllUsers();
+  // Login
+  const login = async (email, password) => {
+    const found = await getUserByEmail(email);
 
-    if (!users[email]) {
+    if (!found) {
       alert("ไม่พบบัญชีผู้ใช้");
       return false;
     }
 
-    if (users[email].password !== password) {
+    if (found.password !== password) {
       alert("รหัสผ่านไม่ถูกต้อง");
       return false;
     }
 
     localStorage.setItem("currentUser", email);
-    setUser(users[email]);
+    setUser(found);
     setIsLoggedIn(true);
 
-    return users[email];
+    return found;
   };
 
-  // อัปเดตผู้ใช้
-  const updateUser = (updatedUser) => {
-    const users = getAllUsers();
+  // ⭐ Update User (ไม่เก็บ Base64 ลง localStorage)
+const updateUser = async (updatedInfo) => {
+  if (!user) return;
 
-    users[updatedUser.email] = updatedUser;
-    saveAllUsers(users);
+  const current = await getUserByEmail(user.email);
 
-    setUser(updatedUser);
+  const updated = {
+    ...current,
+    username: updatedInfo.username,
+    bio: updatedInfo.bio,
+    avatar: updatedInfo.avatar,   // ← บันทึก base64 ได้เลย
+    cover: updatedInfo.cover,     // ← เหมือนกัน
   };
 
- 
+  await saveUser(updated);
+  setUser(updated);
+};
+
+  // Logout
   const logout = () => {
     localStorage.removeItem("currentUser");
     setUser(null);
     setIsLoggedIn(false);
-    navigate("/login");   
+    navigate("/login");
   };
+
   return (
     <AuthContext.Provider
       value={{
         user,
         isLoggedIn,
-        loading,   
+        loading,
         register,
         login,
         logout,

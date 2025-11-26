@@ -11,7 +11,10 @@ function AdminReports() {
     const { deletePost } = usePosts();
 
     useEffect(() => {
-        getAllReports().then(setReports);
+        getAllReports().then((data) => {
+            const sorted = data.sort((a, b) => new Date(b.time) - new Date(a.time));
+            setReports(sorted);
+        });
     }, []);
 
     const handleDeleteReport = async (id) => {
@@ -29,7 +32,7 @@ function AdminReports() {
 
     return (
         <div className={styles.layout}>    {/* ⭐ layout หลัก */}
-            
+
             <AdminSidebar />               {/* ⭐ แสดง Sidebar */}
 
             <div className={styles.content}>  {/* ⭐ content อยู่ขวา */}
@@ -42,15 +45,34 @@ function AdminReports() {
                 {reports.map((r) => (
                     <div key={r.id} className={styles.card}>
                         <div className={styles.row}><strong>โพสต์ ID:</strong> {r.postId}</div>
-                        <div className={styles.row}><strong>ผู้รายงาน:</strong> {r.reportedBy}</div>
-                        <div className={styles.row}><strong>เจ้าของโพสต์:</strong> {r.postOwner}</div>
+                        <div className={styles.row}>
+                            <strong>ผู้รายงาน:</strong> {r.reporter?.email || "ไม่พบข้อมูล"}
+                        </div>
+
+                        <div className={styles.row}>
+                            <strong>เจ้าของโพสต์:</strong> {r.postOwner?.email || "ไม่พบข้อมูล"}
+                        </div>
                         <div className={styles.row}><strong>เหตุผล:</strong> {r.reason}</div>
                         <div className={styles.row}><strong>เวลา:</strong> {new Date(r.time).toLocaleString("th-TH")}</div>
-                        <div className={styles.row}><strong>เนื้อหาโพสต์:</strong> {r.postContent}</div>
-
+                        {/* เนื้อหาโพสต์ */}
+                        <div className={styles.row}>
+                            <strong>เนื้อหาโพสต์:</strong>{" "}
+                            {
+                                typeof r.postContent === "string"
+                                    ? r.postContent
+                                    : r.postContent?.content || "ไม่มีเนื้อหา"
+                            }
+                        </div>
                         <div className={styles.actions}>
                             <button type="button" className={styles.viewBtn}
-                                onClick={() => setSelectedPost({ ...r.fullPost })}>
+                                onClick={() =>
+                                    setSelectedPost({
+                                        owner: r.postOwner || { username: "ไม่พบชื่อผู้ใช้", avatar: "/assets/default-avatar.png" },
+                                        content: r.postContent || "",
+                                        image: r.postImage || null,
+                                        time: r.time
+                                    })
+                                }>
                                 🔍 ดูโพสต์ต้นฉบับ
                             </button>
 
@@ -71,7 +93,7 @@ function AdminReports() {
                     <PostPopup post={selectedPost} onClose={() => setSelectedPost(null)} />
                 )}
             </div>
-        </div>
+        </div >
     );
 }
 
